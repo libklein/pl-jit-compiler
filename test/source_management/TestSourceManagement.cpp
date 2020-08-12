@@ -123,26 +123,26 @@ TEST(SourceManagement, PrettyPrinting) {
 
     {
         SourcePosition pos_line_1 = std::next(code.begin(), 10);
-        ASSERT_EQ(capture_output(pos_line_1), "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n          ^");
+        EXPECT_EQ(capture_output(pos_line_1), "Position 0:10\nLorem ipsum dolor sit amet, consectetur adipiscing elit.\n          ^");
         SourcePosition pos_line_2 = std::next(code.begin(), 58);
         // Only second line should be shown
-        ASSERT_EQ(capture_output(pos_line_2), "AB\n ^");
+        EXPECT_EQ(capture_output(pos_line_2), "Position 1:1\nAB\n ^");
         SourcePosition pos_newline = std::next(code.begin(), 56);
         // Error caret should be after the ., i.e. where the newline would be
-        ASSERT_EQ(capture_output(pos_newline), "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n                                                        ^");
+        EXPECT_EQ(capture_output(pos_newline), "Position 0:56\nLorem ipsum dolor sit amet, consectetur adipiscing elit.\n                                                        ^");
     }
     {
         // Empty fragement should not print anything
         SourceFragment fragment(code.begin(), code.begin());
-        ASSERT_EQ(capture_output(fragment), "");
+        EXPECT_EQ(capture_output(fragment), "");
         // Single character fragment should behave just like position
         SourcePosition pos = std::next(code.begin(), 10);
         fragment = SourceFragment(pos, std::next(pos));
-        ASSERT_EQ(capture_output(pos), capture_output(fragment));
+        EXPECT_EQ(capture_output(pos), capture_output(fragment));
     }
     {
         auto fragment_begin = code.begin(), fragment_end = std::next(fragment_begin, 5);
         SourceFragment fragment(fragment_begin, fragment_end);
-        ASSERT_EQ(capture_output(fragment), "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n^~~~~");
+        EXPECT_EQ(capture_output(fragment), "Position 0:0\nLorem ipsum dolor sit amet, consectetur adipiscing elit.\n^~~~~");
     }
 }
