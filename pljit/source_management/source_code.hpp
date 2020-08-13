@@ -133,7 +133,6 @@ class source_code {
         std::ostream& output_to_stream(std::ostream& os) const {
             if(begin_pos == end_pos) return os;
             // TODO Does not work for multi line segments. But is that even required?
-            assert(begin_pos.line == end_pos.line);
             os << begin_pos;
             std::fill_n(std::ostream_iterator<std::ostream::char_type>(os), std::max(static_cast<int>(end_pos.cursor - begin_pos.cursor) - 1, 0), '~');
             return os;
@@ -199,8 +198,9 @@ class source_code {
         } while(cur_line_end != code.end());
     };
     explicit source_code(const char* code) : source_code(std::string(code)) {};
+    explicit source_code(std::string_view code) : source_code(std::string(code)) {};
     explicit source_code(std::filesystem::path path) {
-        throw std::runtime_error("Not implemented");
+        throw std::runtime_error("Cannot read "+path.string()+": Not implemented");
     };
 
     auto begin() const {
