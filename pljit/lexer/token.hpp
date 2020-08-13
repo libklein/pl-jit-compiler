@@ -39,7 +39,7 @@ namespace pljit::lexer {
         PARAM,
         VAR,
         CONST,
-        CONST_ASSIGNMENT_OP,
+        INIT_ASSIGNMENT_OP,
         BEGIN,
         END,
         RETURN,
@@ -55,8 +55,8 @@ namespace pljit::lexer {
         EOS
 };
 
-    class token {
-        using SourceFragment = source_management::SourceFragment;
+class token {
+    using SourceFragment = source_management::SourceFragment;
         TokenType type;
         SourceFragment source;
 
