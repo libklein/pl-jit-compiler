@@ -13,10 +13,11 @@ using namespace pljit::lexer;
 class ParserTest : public ::testing::Test {
     protected:
     const source_code code{"PARAM width, height, depth;\n"
-                           "VAR volume;\n"
+                           "VAR volume, some;\n"
                            "CONST density = 2400;\n"
                            "BEGIN\n"
-                           "volume :=width * height * depth;\n"
+                           "volume := width * height * depth;\n"
+                           "some := volume + width * 10 + height;\n"
                            "RETURN\ndensity * volume\n"
                            "END."};
     //const source_code code{"PARAM width, height, depth;."};
