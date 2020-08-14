@@ -43,7 +43,7 @@ auto semantic_analysis::ast_creation_visitor::lookup_identifier(std::string_view
 auto semantic_analysis::ast_creation_visitor::register_symbol(const parser::identifier_node& node, semantic_analysis::symbol::symbol_type type) -> std::pair<symbol_handle, bool> {
     std::string_view identifier = node.get_token().get_code_reference().str();
     if(auto handle = lookup_identifier(identifier); handle) return {*handle, false};
-    symbol_handle id = symbols.insert(node.get_name(), node.get_token().get_code_reference(), type);
+    symbol_handle id = symbols.insert(node.get_token().get_code_reference(), type);
     identifier_mapping.emplace(identifier, id);
     return {id, true};
 }
@@ -90,9 +90,7 @@ void semantic_analysis::ast_creation_visitor::visit(const parser::literal_node& 
     next_node = std::make_unique<semantic_analysis::LiteralNode>(node.get_value());
 }
 
-void semantic_analysis::ast_creation_visitor::visit(const parser::terminal_node& node) {
-    // TODO Set last source pos
-}
+void semantic_analysis::ast_creation_visitor::visit(const parser::terminal_node&) {}
 
 void semantic_analysis::ast_creation_visitor::visit(const parser::additive_expression_node& node) {
     // Is either a multiplicative expression - in this case we dont do anything

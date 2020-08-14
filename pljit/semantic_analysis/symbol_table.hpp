@@ -25,7 +25,7 @@ namespace pljit::semantic_analysis {
 
         public:
         using symbol_handle = std::vector<symbol>::size_type;
-        symbol_handle insert(std::string_view identifier, source_management::source_code::SourceFragment decl, symbol::symbol_type type);
+        symbol_handle insert(source_management::source_code::SourceFragment decl, symbol::symbol_type type);
         symbol& get(symbol_handle handle);
         const symbol& get(symbol_handle handle) const;
 

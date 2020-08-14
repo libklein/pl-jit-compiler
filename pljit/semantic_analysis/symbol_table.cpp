@@ -2,7 +2,7 @@
 
 using namespace pljit::semantic_analysis;
 
-auto symbol_table::insert(std::string_view identifier, pljit::source_management::SourceFragment decl, symbol::symbol_type type) -> symbol_handle {
+auto symbol_table::insert(pljit::source_management::SourceFragment decl, symbol::symbol_type type) -> symbol_handle {
     auto id = symbols.size();
     symbols.push_back({decl, type, id, type != symbol::VARIABLE});
     return id;

@@ -13,7 +13,7 @@ void dot_print_visitor::visit(FunctionNode& node) {
     out << "}";
 }
 
-void dot_print_visitor::visit(IdentifierNode& node) {
+void dot_print_visitor::visit(IdentifierNode&) {
     write_labeled_node("Identifier");
 }
 
