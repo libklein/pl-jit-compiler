@@ -182,6 +182,7 @@ class source_code {
     std::vector<SourcePosition::offset_t> lines;
 
     public:
+    source_code() = default;
     explicit source_code(std::string source_code) : code(std::move(source_code)) {
         if(code.empty()) return;
 

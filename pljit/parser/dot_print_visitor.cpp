@@ -73,3 +73,4 @@ void dot_print_visitor::visit(const unary_expression_node& node) {
 void dot_print_visitor::visit(const variable_declaration_node& node) {
     write_non_terminal_node(node);
 }
+dot_print_visitor::dot_print_visitor(std::ostream& out) : out(out) {}

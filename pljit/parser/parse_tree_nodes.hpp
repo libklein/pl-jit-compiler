@@ -28,7 +28,7 @@ namespace pljit::parser {
 
         LITERAL,
         IDENTIFIER,
-        GENERIC_NODE
+        TEXT_NODE
     };
 
     struct node_base {
@@ -43,7 +43,7 @@ namespace pljit::parser {
             return type;
         };
 
-        virtual void accept(parse_tree_visitor& visitor) = 0;
+        virtual void accept(parse_tree_visitor& visitor) const = 0;
 
         virtual ~node_base() = default;
     };
@@ -84,12 +84,17 @@ namespace pljit::parser {
         }
 
         public:
-        auto number_of_dynamic_children() const {
+        auto get_number_of_dynamic_children() const {
             return dynamic_child_count;
         }
 
         const node_ptr_container_type& get_children() const {
             return children;
+        }
+
+        template <class child_type>
+        child_type* get_child(node_ptr_container_type::size_type index) const {
+            return static_cast<child_type*>(children[index].get());
         }
     };
 
@@ -99,12 +104,16 @@ namespace pljit::parser {
         public:
         static constexpr std::string_view NAME = "terminal";
 
-        explicit terminal_node(lexer::token token) : node_base(GENERIC_NODE), token(token) {}
+        explicit terminal_node(lexer::token token) : node_base(TEXT_NODE), token(token) {}
 
-        void accept(parse_tree_visitor& visitor) override;
+        void accept(parse_tree_visitor& visitor) const override;
 
         const lexer::token& get_token() const {
             return token;
+        }
+
+        std::string_view get_text() const {
+            return token.get_code_reference().str();
         }
     };
 
@@ -113,7 +122,16 @@ namespace pljit::parser {
         static constexpr std::string_view NAME = "literal";
 
         explicit literal_node(node_ptr token) : non_terminal_node(LITERAL, std::move(token)) {}
-        void accept(parse_tree_visitor& visitor) override;
+        void accept(parse_tree_visitor& visitor) const override;
+
+        lexer::token get_token() const {
+            return get_child<terminal_node>(0)->get_token();
+        }
+
+        int64_t get_value() const {
+            // We can assume that no overflows happen
+            return std::strtoll(get_token().get_code_reference().str().data(), nullptr, 10);
+        };
     };
 
     struct identifier_node : public non_terminal_node {
@@ -121,7 +139,15 @@ namespace pljit::parser {
         static constexpr std::string_view NAME = "identifier";
 
         explicit identifier_node(node_ptr token) : non_terminal_node(IDENTIFIER, std::move(token)) {}
-        void accept(parse_tree_visitor& visitor) override;
+        void accept(parse_tree_visitor& visitor) const override;
+
+        lexer::token get_token() const {
+            return get_child<terminal_node>(0)->get_token();
+        }
+
+        std::string_view get_name() const {
+            return get_token().get_code_reference().str();
+        };
     };
 
     struct init_declarator_node : public non_terminal_node {
@@ -133,7 +159,15 @@ namespace pljit::parser {
             : non_terminal_node(INIT_DECLARATOR,
                                            std::move(identifier), std::move(assignmentOperator), std::move(literal)) {}
 
-        void accept(parse_tree_visitor& visitor) override;
+        void accept(parse_tree_visitor& visitor) const override;
+
+        const identifier_node* get_identifier() const {
+            return get_child<identifier_node>(0);
+        }
+
+        const literal_node* get_value() const {
+            return get_child<literal_node>(2);
+        }
     };
 
     struct declarator_list_node : public non_terminal_node {
@@ -149,34 +183,59 @@ namespace pljit::parser {
             }
         }
 
-        void accept(parse_tree_visitor& visitor) override;
+        auto get_number_of_declarations() const {
+            assert(get_number_of_dynamic_children() % 2 == 0);
+            return 1 + (get_number_of_dynamic_children() / 2);
+        }
+
+        const identifier_node* get_declaration(decltype(children)::size_type index) const {
+            return get_child<identifier_node>(index * 2);
+        }
+
+        void accept(parse_tree_visitor& visitor) const override;
     };
 
-struct init_declarator_list_node : public non_terminal_node {
-    static constexpr std::string_view NAME = "init-declarator-list";
+    // TODO Common base for list nodes
+    struct init_declarator_list_node : public non_terminal_node {
+        static constexpr std::string_view NAME = "init-declarator-list";
 
-    init_declarator_list_node(std::unique_ptr<init_declarator_node> identifier,
-                                  std::vector<std::pair<
-                                      std::unique_ptr<terminal_node>,
-                                          std::unique_ptr<init_declarator_node>
-                                      >>  otherIdentifiers) : non_terminal_node(INIT_DECLARATOR_LIST, std::move(identifier)) {
+        // TODO Remove type-safe constructors (sigh)
+        init_declarator_list_node(std::unique_ptr<init_declarator_node> identifier,
+                                      std::vector<std::pair<
+                                          std::unique_ptr<terminal_node>,
+                                              std::unique_ptr<init_declarator_node>
+                                          >>  otherIdentifiers) : non_terminal_node(INIT_DECLARATOR_LIST, std::move(identifier)) {
             for(auto& entry : otherIdentifiers) {
                 add_child(std::move(entry.first), std::move(entry.second));
             }
         }
 
-    void accept(parse_tree_visitor& visitor) override;
-};
+        auto get_number_of_declarations() const {
+            assert(get_number_of_dynamic_children() % 2 == 0);
+            return 1 + (get_number_of_dynamic_children() / 2);
+        }
+
+        const init_declarator_node* get_declaration(decltype(children)::size_type index) const {
+            return get_child<init_declarator_node>(index * 2);
+        }
+
+        void accept(parse_tree_visitor& visitor) const override;
+    };
 
 struct parameter_declaration_node : public non_terminal_node {
     static constexpr std::string_view NAME = "parameter-declaration";
 
+    // TODO Superclass
     parameter_declaration_node(std::unique_ptr<terminal_node> paramKeyword,
                                std::unique_ptr<declarator_list_node>  declarators,
                                std::unique_ptr<terminal_node> statementTerminator)
         : non_terminal_node(PARAMETER_DECLARATIONS, std::move(paramKeyword), std::move(declarators), std::move(statementTerminator)) {}
 
-    void accept(parse_tree_visitor& visitor) override;
+    const declarator_list_node* get_declarator_list() const {
+        return get_child<declarator_list_node>(1);
+    }
+
+    void accept(parse_tree_visitor& visitor) const override;
 };
 
 struct variable_declaration_node : public non_terminal_node {
@@ -187,7 +246,11 @@ struct variable_declaration_node : public non_terminal_node {
                               std::unique_ptr<terminal_node> statement_terminator)
         : non_terminal_node(VARIABLE_DECLARATIONS, std::move(variable_keyword), std::move(declarators), std::move(statement_terminator)) {}
 
-    void accept(parse_tree_visitor& visitor) override;
+    const declarator_list_node* get_declarator_list() const {
+        return get_child<declarator_list_node>(1);
+    }
+
+    void accept(parse_tree_visitor& visitor) const override;
 };
 
 struct constant_declaration_node : public non_terminal_node {
@@ -198,7 +261,11 @@ struct constant_declaration_node : public non_terminal_node {
                                   std::unique_ptr<terminal_node> statement_terminator)
             : non_terminal_node(CONSTANT_DECLARATIONS, std::move(const_keyword), std::move(declarators), std::move(statement_terminator)) {}
 
-    void accept(parse_tree_visitor& visitor) override;
+    const init_declarator_list_node* get_init_declarator_list() const {
+        return get_child<init_declarator_list_node>(1);
+    }
+
+    void accept(parse_tree_visitor& visitor) const override;
 };
 
 struct multiplicative_expression_node;
@@ -216,18 +283,29 @@ struct additive_expression_node : public non_terminal_node {
             }
         }
 
-    void accept(parse_tree_visitor& visitor) override;
+    void accept(parse_tree_visitor& visitor) const override;
+
+    const multiplicative_expression_node* get_lhs_expression() const {
+        return get_child<multiplicative_expression_node>(0);
+    }
+
+    const terminal_node* get_operator() const {
+        return has_subexpression ? get_child<terminal_node>(1) : nullptr;
+    }
+
+    const additive_expression_node* get_rhs_expression() const {
+        return has_subexpression ? get_child<additive_expression_node>(2) : nullptr;
+    }
 };
 
 struct primary_expression_node : public non_terminal_node {
     static constexpr std::string_view NAME = "primary-expression";
 
-    // Use scoped enum to avoid confusion with node type
-        enum class primary_expression_type {
-            IDENTIFIER,
-            LITERAL,
-            ADDITIVE_EXPRESSION
-        };
+    enum class primary_expression_type {
+        IDENTIFIER,
+        LITERAL,
+        ADDITIVE_EXPRESSION
+    };
 
         primary_expression_type statement_type;
 
@@ -245,7 +323,22 @@ struct primary_expression_node : public non_terminal_node {
             : non_terminal_node(PRIMARY_EXPRESSION, std::move(l_bracket), std::move(additive_expression), std::move(r_bracket)),
               statement_type(primary_expression_type::ADDITIVE_EXPRESSION) {}
 
-    void accept(parse_tree_visitor& visitor) override;
+        const identifier_node* get_identifier() const {
+            assert(statement_type == primary_expression_type::IDENTIFIER);
+            return get_child<identifier_node>(0);
+        }
+
+        const literal_node* get_literal() const {
+            assert(statement_type == primary_expression_type::LITERAL);
+            return get_child<literal_node>(0);
+        }
+
+        const additive_expression_node* get_expression() const {
+            assert(statement_type == primary_expression_type::ADDITIVE_EXPRESSION);
+            return get_child<additive_expression_node>(1);
+        }
+
+    void accept(parse_tree_visitor& visitor) const override;
 };
 
 struct unary_expression_node : public non_terminal_node {
@@ -258,12 +351,21 @@ struct unary_expression_node : public non_terminal_node {
             this->add_child(std::move(primary_expression));
         }
 
-    void accept(parse_tree_visitor& visitor) override;
+    void accept(parse_tree_visitor& visitor) const override;
+
+    const terminal_node* get_unary_operator() const {
+        return get_child<terminal_node>(0);
+    }
+
+    const primary_expression_node* get_expression() const {
+        return get_child<primary_expression_node>(has_unary_operator);
+    }
 };
 
 struct multiplicative_expression_node : public non_terminal_node {
     static constexpr std::string_view NAME = "multiplicative-expression";
 
+    // TODO Expression base class
     bool has_subexpression = false;
         multiplicative_expression_node(std::unique_ptr<unary_expression_node> unary_expression,
         std::unique_ptr<terminal_node> binary_operator,
@@ -274,7 +376,19 @@ struct multiplicative_expression_node : public non_terminal_node {
             }
         }
 
-    void accept(parse_tree_visitor& visitor) override;
+    const unary_expression_node* get_lhs_expression() const {
+        return get_child<unary_expression_node>(0);
+    }
+
+    const terminal_node* get_operator() const {
+        return get_child<terminal_node>(1);
+    }
+
+    const multiplicative_expression_node* get_rhs_expression() const {
+        return get_child<multiplicative_expression_node>(2);
+    }
+
+    void accept(parse_tree_visitor& visitor) const override;
 };
 
 struct assignment_expression_node : public non_terminal_node {
@@ -283,23 +397,41 @@ struct assignment_expression_node : public non_terminal_node {
     assignment_expression_node(std::unique_ptr<identifier_node> identifier, std::unique_ptr<terminal_node> assignment_operator, std::unique_ptr<additive_expression_node> additive_expression)
         : non_terminal_node(ASSIGNMENT_EXPRESSION, std::move(identifier), std::move(assignment_operator), std::move(additive_expression)) {}
 
-    void accept(parse_tree_visitor& visitor) override;
+    void accept(parse_tree_visitor& visitor) const override;
+
+    const identifier_node* get_identifier() const {
+        return get_child<identifier_node>(0);
+    }
+
+    const additive_expression_node* get_expression() const {
+        return get_child<additive_expression_node>(2);
+    }
 };
 
 struct statement_node : public non_terminal_node {
     static constexpr std::string_view NAME = "statement";
 
     // Use scoped enum to avoid confusion with node type
-        enum class statement_type {
-            RETURN_STATEMENT,
-            ASSIGNMENT_STATEMENT
-        };
+    enum class statement_type {
+        RETURN_STATEMENT,
+        ASSIGNMENT_STATEMENT
+    };
 
-        statement_type statement_type;
-        statement_node(std::unique_ptr<assignment_expression_node> assignment) : non_terminal_node(STATEMENT, std::move(assignment)), statement_type(statement_type::RETURN_STATEMENT) {}
-        statement_node(std::unique_ptr<terminal_node> return_keyword, std::unique_ptr<additive_expression_node> additive_expression) : non_terminal_node(STATEMENT, std::move(return_keyword), std::move(additive_expression)), statement_type(statement_type::ASSIGNMENT_STATEMENT) {}
+    statement_type statement_type;
+    statement_node(std::unique_ptr<assignment_expression_node> assignment) : non_terminal_node(STATEMENT, std::move(assignment)), statement_type(statement_type::ASSIGNMENT_STATEMENT) {}
+    statement_node(std::unique_ptr<terminal_node> return_keyword, std::unique_ptr<additive_expression_node> additive_expression) : non_terminal_node(STATEMENT, std::move(return_keyword), std::move(additive_expression)), statement_type(statement_type::RETURN_STATEMENT) {}
 
-    void accept(parse_tree_visitor& visitor) override;
+    const assignment_expression_node* get_assignment() const {
+        assert(statement_type == statement_type::ASSIGNMENT_STATEMENT);
+        return get_child<assignment_expression_node>(0);
+    }
+
+    const additive_expression_node* get_return_expression() const {
+        assert(statement_type == statement_type::RETURN_STATEMENT);
+        return get_child<additive_expression_node>(1);
+    }
+
+    void accept(parse_tree_visitor& visitor) const override;
 };
 
 struct statement_list_node : public non_terminal_node {
@@ -313,7 +445,16 @@ struct statement_list_node : public non_terminal_node {
             }
         }
 
-    void accept(parse_tree_visitor& visitor) override;
+    auto get_number_of_statements() const {
+        assert(get_number_of_dynamic_children() % 2 == 0);
+        return 1 + (get_number_of_dynamic_children() / 2);
+    }
+
+    const statement_node* get_statement(decltype(children)::size_type index) const {
+        return get_child<statement_node>(index * 2);
+    }
+
+    void accept(parse_tree_visitor& visitor) const override;
 };
 
 struct compound_statement_node : public non_terminal_node {
@@ -324,7 +465,11 @@ struct compound_statement_node : public non_terminal_node {
             std::unique_ptr<terminal_node> end_keyword)
         : non_terminal_node(COMPOUND_STATEMENT, std::move(begin_keyword), std::move(statements), std::move(end_keyword)) {}
 
-    void accept(parse_tree_visitor& visitor) override;
+    const statement_list_node* get_statement_list() const {
+        return get_child<statement_list_node>(1);
+    }
+
+    void accept(parse_tree_visitor& visitor) const override;
 };
 
 struct function_defition_node : public non_terminal_node {
@@ -349,7 +494,25 @@ struct function_defition_node : public non_terminal_node {
         }
     }
 
-    void accept(parse_tree_visitor& visitor) override;
+    void accept(parse_tree_visitor& visitor) const override;
+
+    const compound_statement_node* get_compund_statement() const {
+        unsigned compound_statement_index = has_constant_declaration + has_variable_declaration + has_parameter_declaration;
+        return get_child<compound_statement_node>(compound_statement_index);
+    }
+
+    const constant_declaration_node* get_constant_declarations() const {
+        return has_constant_declaration ?
+            get_child<constant_declaration_node>(has_variable_declaration + has_parameter_declaration) : nullptr;
+    }
+
+    const variable_declaration_node* get_variable_declarations() const {
+        return has_variable_declaration ? get_child<variable_declaration_node>(has_parameter_declaration) : nullptr;
+    }
+
+    const parameter_declaration_node* get_parameter_declarations() const {
+        return has_parameter_declaration ? get_child<parameter_declaration_node>(0) : nullptr;
+    }
 };
 } // namespace pljit::parser
 
