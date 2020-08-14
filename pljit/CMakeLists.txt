@@ -8,7 +8,8 @@ set(PLJIT_SOURCES
     semantic_analysis/AST.cpp
     semantic_analysis/symbol_table.cpp
     semantic_analysis/ast_creation_visitor.cpp
-    semantic_analysis/dot_print_visitor.cpp)
+    semantic_analysis/dot_print_visitor.cpp
+    Executor.cpp)
 
 add_library(pljit_core ${PLJIT_SOURCES})
 target_include_directories(pljit_core PUBLIC ${CMAKE_SOURCE_DIR})
