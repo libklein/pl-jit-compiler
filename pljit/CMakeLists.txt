@@ -3,7 +3,12 @@ set(PLJIT_SOURCES
     lexer/token.cpp
     lexer/lexer.cpp
     parser/parse_tree_nodes.cpp
-    parser/parser.cpp parser/parse_tree_visitor.cpp parser/parse_tree_visitor.hpp parser/dot_print_visitor.cpp parser/dot_print_visitor.hpp)
+    parser/parser.cpp
+    parser/dot_print_visitor.cpp
+    semantic_analysis/AST.cpp
+    semantic_analysis/symbol_table.cpp
+    semantic_analysis/ast_creation_visitor.cpp
+    semantic_analysis/dot_print_visitor.cpp)
 
 add_library(pljit_core ${PLJIT_SOURCES})
 target_include_directories(pljit_core PUBLIC ${CMAKE_SOURCE_DIR})
