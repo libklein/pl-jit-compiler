@@ -31,7 +31,6 @@ namespace pljit::parser {
         void visit(const assignment_expression_node& node) override;
         void visit(const compound_statement_node& node) override;
         void visit(const constant_declaration_node& node) override;
-        void visit(const function_defition_node& node) override;
         void visit(const init_declarator_list_node& node) override;
         void visit(const init_declarator_node& node) override;
         void visit(const multiplicative_expression_node& node) override;
@@ -39,7 +38,7 @@ namespace pljit::parser {
         void visit(const primary_expression_node& node) override;
         void visit(const statement_list_node& node) override;
         void visit(const statement_node& node) override;
-        void visit(const test_function_defition_node& node) override;
+        void visit(const function_defition_node& node) override;
         void visit(const unary_expression_node& node) override;
         void visit(const variable_declaration_node& node) override;
     };

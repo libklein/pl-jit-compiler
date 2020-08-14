@@ -201,11 +201,13 @@ struct constant_declaration_node : public non_terminal_node {
     void accept(parse_tree_visitor& visitor) override;
 };
 
+struct multiplicative_expression_node;
+
 struct additive_expression_node : public non_terminal_node {
     static constexpr std::string_view NAME = "additive-expression";
 
     bool has_subexpression = false;
-        additive_expression_node(std::unique_ptr<node_base> multiplicative_expression,
+        additive_expression_node(std::unique_ptr<multiplicative_expression_node> multiplicative_expression,
         std::unique_ptr<terminal_node> binary_operator,
             std::unique_ptr<additive_expression_node> additive_expression)
         : non_terminal_node(ADDITIVE_EXPRESSION, std::move(multiplicative_expression)) {
@@ -346,33 +348,6 @@ struct function_defition_node : public non_terminal_node {
             this->insert_child(children.begin(), std::move(parameterDeclarations));
         }
     }
-
-    void accept(parse_tree_visitor& visitor) override;
-};
-
-struct test_function_defition_node : public non_terminal_node {
-    static constexpr std::string_view NAME = "test-function-definition";
-
-    bool has_parameter_declaration = false;
-        bool has_variable_declaration = false;
-        bool has_constant_declaration = false;
-        test_function_defition_node(std::unique_ptr<parameter_declaration_node>  parameterDeclarations, std::unique_ptr<variable_declaration_node>  variableDeclaration, std::unique_ptr<constant_declaration_node>  constantDeclarations, std::unique_ptr<terminal_node> programTerminator)
-        : non_terminal_node(FUNCTION_DEFINITION) {
-            // More efficient than passing everything in the constructor and then removing nullptr
-            if(parameterDeclarations) {
-                has_parameter_declaration = true;
-                this->add_child(std::move(parameterDeclarations));
-            }
-            if(variableDeclaration) {
-                has_variable_declaration = true;
-                this->add_child(std::move(variableDeclaration));
-            }
-            if(constantDeclarations) {
-                has_constant_declaration = true;
-                this->add_child(std::move(constantDeclarations));
-            }
-            this->add_child(std::move(programTerminator));
-        }
 
     void accept(parse_tree_visitor& visitor) override;
 };

@@ -33,9 +33,6 @@ void pljit::parser::statement_list_node::accept(pljit::parser::parse_tree_visito
 void pljit::parser::literal_node::accept(pljit::parser::parse_tree_visitor& visitor) {
     visitor.visit(*this);
 }
-void pljit::parser::test_function_defition_node::accept(pljit::parser::parse_tree_visitor& visitor) {
-    visitor.visit(*this);
-}
 void pljit::parser::primary_expression_node::accept(pljit::parser::parse_tree_visitor& visitor) {
     visitor.visit(*this);
 }

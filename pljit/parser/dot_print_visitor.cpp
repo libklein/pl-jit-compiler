@@ -41,9 +41,6 @@ void dot_print_visitor::visit(const compound_statement_node& node) {
 void dot_print_visitor::visit(const constant_declaration_node& node) {
     write_non_terminal_node(node);
 }
-void dot_print_visitor::visit(const function_defition_node& node) {
-    write_non_terminal_node(node);
-}
 void dot_print_visitor::visit(const init_declarator_list_node& node) {
     write_non_terminal_node(node);
 }
@@ -65,7 +62,7 @@ void dot_print_visitor::visit(const statement_list_node& node) {
 void dot_print_visitor::visit(const statement_node& node) {
     write_non_terminal_node(node);
 }
-void dot_print_visitor::visit(const test_function_defition_node& node) {
+void dot_print_visitor::visit(const function_defition_node& node) {
     out << "graph {\n";
     write_non_terminal_node(node);
     out << "}";

@@ -208,36 +208,136 @@ namespace pljit::parser {
             return nullptr;
         }
 
-        std::unique_ptr<compound_statement_node> parse_compound_statement();
+        std::unique_ptr<compound_statement_node> parse_compound_statement() {
+            if(auto begin_kw = parse_terminal_token(lexer::BEGIN); begin_kw) {
+                if(auto statement_list = parse_statement_list(); statement_list) {
+                    if(auto end_kw = parse_terminal_token(lexer::END); end_kw) {
+                        return std::make_unique<compound_statement_node>(
+                            std::move(begin_kw),
+                            std::move(statement_list),
+                            std::move(end_kw));
+                    }
+                }
+            }
+            return nullptr;
+        }
 
-        std::unique_ptr<statement_list_node> parse_statement_list();
+        std::unique_ptr<statement_node> parse_statement() {
+            if(expect_token(lexer::RETURN)) {
+                if(auto return_kw = parse_terminal_token(lexer::RETURN); return_kw) {
+                    if(auto additive_expression = parse_additive_expression(); additive_expression) {
+                        return std::make_unique<statement_node>(std::move(return_kw), std::move(additive_expression));
+                    }
+                }
+            } else {
+                if(auto assignment = parse_assignment(); assignment) {
+                    return std::make_unique<statement_node>(std::move(assignment));
+                }
+            }
+            return nullptr;
+        };
 
-        std::unique_ptr<statement_node> parse_statement();
+        std::unique_ptr<assignment_expression_node> parse_assignment() {
+            if(auto identifier = parse_identifier(); identifier) {
+                if (auto assignment_operator = parse_terminal_token(lexer::VAR_ASSIGNMENT_OP); assignment_operator) {
+                    if (auto additive_expression = parse_additive_expression(); additive_expression) {
+                        return std::make_unique<assignment_expression_node>(
+                            std::move(identifier), std::move(assignment_operator), std::move(additive_expression));
+                    }
+                }
+            }
+            return nullptr;
+        };
 
-        std::unique_ptr<assignment_expression_node> parse_assignment();
+        std::unique_ptr<additive_expression_node> parse_additive_expression() {
+            if(auto multiplicative_expression = parse_multiplicative_expression(); multiplicative_expression) {
+                std::unique_ptr<terminal_node> operator_symbol;
+                if(expect_token(lexer::PLUS_OP)) {
+                    operator_symbol = parse_terminal_token(lexer::PLUS_OP);
+                } else if (expect_token(lexer::MINUS_OP)) {
+                    operator_symbol = parse_terminal_token(lexer::MINUS_OP);
+                } else {
+                    return std::make_unique<additive_expression_node>(
+                        std::move(multiplicative_expression), nullptr, nullptr);
+                }
 
-        std::unique_ptr<additive_expression_node> parse_additive_expression();
+                if(auto additive_expression = parse_additive_expression(); additive_expression) {
+                    return std::make_unique<additive_expression_node>(
+                        std::move(multiplicative_expression), std::move(operator_symbol), std::move(additive_expression)
+                    );
+                }
+            }
+            return nullptr;
+        };
 
-        std::unique_ptr<multiplicative_expression_node> parse_multiplicative_expression();
+        std::unique_ptr<multiplicative_expression_node> parse_multiplicative_expression() {
+            if(auto unary_expression = parse_unary_expression(); unary_expression) {
+                std::unique_ptr<terminal_node> operator_symbol;
+                if(expect_token(lexer::MULT_OP)) {
+                    operator_symbol = parse_terminal_token(lexer::MULT_OP);
+                } else if (expect_token(lexer::DIV_OP)) {
+                    operator_symbol = parse_terminal_token(lexer::DIV_OP);
+                } else {
+                    return std::make_unique<multiplicative_expression_node>(std::move(unary_expression), nullptr, nullptr);
+                }
 
-        std::unique_ptr<unary_expression_node> parse_unary_expression();
+                if(operator_symbol) {
+                    if (auto multiplicative_expression = parse_multiplicative_expression(); multiplicative_expression) {
+                        return std::make_unique<multiplicative_expression_node>(
+                            std::move(unary_expression), std::move(operator_symbol), std::move(multiplicative_expression));
+                    }
+                }
+            }
+            return nullptr;
+        }
 
-        std::unique_ptr<primary_expression_node> parse_primary_expression;
+        std::unique_ptr<unary_expression_node> parse_unary_expression() {
+            std::unique_ptr<terminal_node> operator_symbol(nullptr);
+            if(expect_token(lexer::PLUS_OP)) {
+                operator_symbol = parse_terminal_token(lexer::PLUS_OP);
+            } else if (expect_token(lexer::MINUS_OP)) {
+                operator_symbol = parse_terminal_token(lexer::MINUS_OP);
+            }
+            if(auto primary_expression = parse_primary_expression(); primary_expression) {
+                return std::make_unique<unary_expression_node>(std::move(operator_symbol), std::move(primary_expression));
+            }
+            return nullptr;
+        }
 
-        std::optional<test_function_defition_node> parse_function_definition() {
-            /*return {
-                parse_parameter_declaration(),
-                parse_variable_declaration(),
-                parse_constant_declaration(),
-                parse_compund_statement(),
-                parse_terminal_token(TokenType::PROGRAM_TERMINATOR)
-            };*/
-            // TODO Check lexer, should be at EOS
-            return std::nullopt;
+        std::unique_ptr<primary_expression_node> parse_primary_expression() {
+            if(expect_token(lexer::IDENTIFIER)) {
+                if(auto identifier = parse_identifier(); identifier) {
+                    return std::make_unique<primary_expression_node>(std::move(identifier));
+                }
+            } else if (expect_token(lexer::LITERAL)) {
+                if(auto literal = parse_literal(); literal) {
+                    return std::make_unique<primary_expression_node>(std::move(literal));
+                }
+            } else if(expect_token(lexer::L_BRACKET)) {
+                if(auto l_bracket = parse_terminal_token(lexer::L_BRACKET); l_bracket) {
+                    if(auto additive_expression = parse_additive_expression(); additive_expression) {
+                        if (auto r_bracket = parse_terminal_token(lexer::R_BRACKET); r_bracket) {
+                            return std::make_unique<primary_expression_node>(
+                                std::move(l_bracket), std::move(additive_expression), std::move(r_bracket));
+                        }
+                    }
+                }
+            }
+            return nullptr;
+        };
+
+        std::unique_ptr<statement_list_node> parse_statement_list() {
+            // Statement {; statement}
+            if (auto statement = parse_statement(); statement) {
+                if (auto statement_tail = parse_list_of(lexer::STATEMENT_TERMINATOR, [this]() { return this->parse_statement(); }); statement_tail) {
+                    return std::make_unique<statement_list_node>(std::move(statement), std::move(*statement_tail));
+                }
+            }
+            return nullptr;
         }
 
         public:
-        std::unique_ptr<test_function_defition_node> parse_test_function_definition() {
+        std::unique_ptr<function_defition_node> parse_function_definition() {
             auto param_decl = parse_parameter_declaration();
             if(has_error()) { // A non-recoverable error has been detected
                 return nullptr;
@@ -250,17 +350,21 @@ namespace pljit::parser {
             if(has_error()) { // A non-recoverable error has been detected
                 return nullptr;
             }
-            if(auto program_terminator = parse_terminal_token(lexer::PROGRAM_TERMINATOR); program_terminator) {
-                if(!peek_token().has_value() || peek_token()->Type() != lexer::EOS) {
-                    // Tokens remaining - program must be syntactically invalid.
-                    report_error("Error parsing function definition. Input after \".\"");
-                    return nullptr;
+            if(auto compound_statement = parse_compound_statement(); compound_statement) {
+                if (auto program_terminator = parse_terminal_token(lexer::PROGRAM_TERMINATOR); program_terminator) {
+                    if (!peek_token().has_value() || peek_token()->Type() != lexer::EOS) {
+                        // Tokens remaining - program must be syntactically invalid.
+                        report_error("Error parsing function definition. Input after \".\"");
+                        return nullptr;
+                    }
+
+                    return std::make_unique<function_defition_node>(
+                        std::move(param_decl),
+                        std::move(var_decl),
+                        std::move(const_decl),
+                        std::move(compound_statement),
+                        std::move(program_terminator));
                 }
-                return std::make_unique<test_function_defition_node>(
-                    std::move(param_decl),
-                    std::move(var_decl),
-                    std::move(const_decl),
-                    std::move(program_terminator));
             }
             return nullptr;
         }
