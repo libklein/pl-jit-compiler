@@ -87,7 +87,7 @@ std::optional<int64_t> Executor::Execute(semantic_analysis::ASTRoot& ast, const 
 }
 
 Executor::Executor(const semantic_analysis::symbol_table& symbols, const std::vector<int64_t>& parameters)
-    : variables(symbols.get_number_of_variables()) {
+    : variables(symbols.size()) {
     assert(symbols.get_number_of_parameters() == parameters.size());
     std::copy(parameters.begin(), parameters.end(), variables.begin());
     initialize_constants(symbols);
