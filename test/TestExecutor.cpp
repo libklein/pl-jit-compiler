@@ -5,7 +5,7 @@
 #include <pljit/semantic_analysis/dot_print_visitor.hpp>
 #include <pljit/semantic_analysis/ast_creation_visitor.hpp>
 #include <pljit/source_management/source_code.hpp>
-#include <pljit/Executor.hpp>
+#include <pljit/execution/ExecutionContext.hpp>
 
 using namespace pljit;
 using namespace pljit::semantic_analysis;
@@ -23,7 +23,13 @@ class Execution : public ::testing::Test {
         EXPECT_TRUE(parse_tree);
         auto [ast, symbolTable] = ast_creation_visitor::AnalyzeParseTree(*parse_tree);
         EXPECT_TRUE(ast);
-        return Executor::Execute(*ast, symbolTable, std::forward<Args>(parameters)...);
+        pljit::execution::ExecutionContext context(symbolTable, std::forward<Args>(parameters)...);
+        std::optional<int64_t> res = ast->evaluate(context);
+        EXPECT_EQ(res.has_value(), context.get_result().has_value());
+        if(res) {
+            EXPECT_EQ(*res, *context.get_result());
+        }
+        return context.get_result();
     }
 };
 

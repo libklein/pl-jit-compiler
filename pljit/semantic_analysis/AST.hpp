@@ -7,6 +7,11 @@
 #include <ostream>
 #include <string_view>
 #include <vector>
+
+namespace pljit::execution {
+    class ExecutionContext; // Forward declare execution context
+} // namespace pljit::execution
+
 namespace pljit::semantic_analysis {
 class ast_visitor; // Forward declare visitor
 class FunctionNode;
@@ -37,6 +42,7 @@ class ASTNode {
         return type;
     };
 
+    virtual std::optional<int64_t> evaluate(execution::ExecutionContext& context) const = 0;
     virtual void accept(ast_visitor& visitor) = 0;
     virtual void accept(const_ast_visitor& visitor) const = 0;
 
@@ -70,7 +76,9 @@ class FunctionNode : public ASTNode {
             assert(next_statement->get_type() == parser::STATEMENT);
         }
     }*/
+
     void accept(ast_visitor& visitor) override;
+    std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
     void accept(const_ast_visitor& visitor) const override;
 };
 
@@ -92,6 +100,7 @@ class IdentifierNode : public ValueNode {
     symbol_table::symbol_handle get_symbol_handle() const {
         return symbol;
     }
+    std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
 
     void accept(ast_visitor& visitor) override;
     void accept(const_ast_visitor& visitor) const override;
@@ -105,7 +114,7 @@ class LiteralNode : public ValueNode {
     int64_t get_value() const {
         return value;
     }
-
+    std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
     void accept(ast_visitor& visitor) override;
     void accept(const_ast_visitor& visitor) const override;
 };
@@ -120,7 +129,7 @@ class ReturnStatementNode : public StatementNode {
     ExpressionNode& get_expression() {
         return *return_expression;
     }
-
+    std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
     void accept(ast_visitor& visitor) override;
     void accept(const_ast_visitor& visitor) const override;
 };
@@ -140,7 +149,7 @@ class AssignmentNode : public StatementNode {
     ExpressionNode& get_expression() {
         return *value;
     }
-
+    std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
     void accept(ast_visitor& visitor) override;
     void accept(const_ast_visitor& visitor) const override;
 };
@@ -174,7 +183,7 @@ class UnaryOperatorASTNode : public ExpressionNode {
     OperatorType get_operator() const {
         return operation;
     }
-
+    std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
     void accept(ast_visitor& visitor) override;
     void accept(const_ast_visitor& visitor) const override;
 };
@@ -222,7 +231,7 @@ class BinaryOperatorASTNode : public ExpressionNode {
 
     std::unique_ptr<ExpressionNode> releaseLeft() { return std::move(left_child); };
     std::unique_ptr<ExpressionNode> releaseRight() { return std::move(right_child); };
-
+    std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
     void accept(ast_visitor& visitor) override;
     void accept(const_ast_visitor& visitor) const override;
 };
