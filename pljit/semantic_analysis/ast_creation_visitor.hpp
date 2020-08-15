@@ -7,10 +7,11 @@
 #include "AST.hpp"
 #include <unordered_map>
 #include <optional>
+#include <tuple>
 
 namespace pljit::semantic_analysis {
 
-    class ast_creation_visitor : public pljit::parser::parse_tree_visitor {
+    class ast_creation_visitor : private pljit::parser::parse_tree_visitor {
         private:
         using symbol_handle = symbol_table::symbol_handle;
 
@@ -25,7 +26,16 @@ namespace pljit::semantic_analysis {
         std::optional<symbol_handle> lookup_identifier(std::string_view name) const;
 
         public:
-        // TODO Static function to parse
+        /***
+         * Analyze a parse tree and return the root of the constructed tree and the symbol table. Should construction fail,
+         * returns a nullptr instead of the tree's root.
+         */
+        static std::pair<std::unique_ptr<FunctionNode>, symbol_table> AnalyzeParseTree(const parser::function_defition_node & parse_tree);
+
+        private:
+        // We do not want users to be able to construct our visitor. Instead, they should use the supplied static method
+        // as an interface to it.
+        ast_creation_visitor() = default;
 
         std::pair<std::unique_ptr<FunctionNode>, symbol_table> release_result() {
             return {std::move(root), std::move(symbols)};

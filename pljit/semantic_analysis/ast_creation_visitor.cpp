@@ -32,6 +32,12 @@ namespace {
     }
 } // namespace
 
+auto semantic_analysis::ast_creation_visitor::AnalyzeParseTree(const parser::function_defition_node& parse_tree) -> std::pair<std::unique_ptr<FunctionNode>, symbol_table> {
+    ast_creation_visitor ast_creator;
+    parse_tree.accept(ast_creator);
+    return ast_creator.release_result();
+}
+
 auto semantic_analysis::ast_creation_visitor::lookup_identifier(std::string_view name) const -> std::optional<symbol_handle> {
     if(auto symbol_iter = identifier_mapping.find(name); symbol_iter != identifier_mapping.end()) {
         return {symbol_iter->second};
