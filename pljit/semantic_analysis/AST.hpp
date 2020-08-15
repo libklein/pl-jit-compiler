@@ -1,5 +1,6 @@
 #pragma once
 //---------------------------------------------------------------------------
+#include "ast_visitor.hpp"
 #include "pljit/parser/parse_tree_nodes.hpp"
 #include "pljit/semantic_analysis/symbol_table.hpp"
 #include <memory>
@@ -8,6 +9,8 @@
 #include <vector>
 namespace pljit::semantic_analysis {
 class ast_visitor; // Forward declare visitor
+class FunctionNode;
+using ASTRoot = FunctionNode;
 //---------------------------------------------------------------------------
 /// Base class for AST nodes
 class ASTNode {
@@ -35,6 +38,7 @@ class ASTNode {
     };
 
     virtual void accept(ast_visitor& visitor) = 0;
+    virtual void accept(const_ast_visitor& visitor) const = 0;
 
     virtual ~ASTNode() = default;
 };
@@ -67,6 +71,7 @@ class FunctionNode : public ASTNode {
         }
     }*/
     void accept(ast_visitor& visitor) override;
+    void accept(const_ast_visitor& visitor) const override;
 };
 
 class ExpressionNode : public ASTNode {
@@ -89,6 +94,7 @@ class IdentifierNode : public ValueNode {
     }
 
     void accept(ast_visitor& visitor) override;
+    void accept(const_ast_visitor& visitor) const override;
 };
 
 class LiteralNode : public ValueNode {
@@ -101,6 +107,7 @@ class LiteralNode : public ValueNode {
     }
 
     void accept(ast_visitor& visitor) override;
+    void accept(const_ast_visitor& visitor) const override;
 };
 
 class ReturnStatementNode : public StatementNode {
@@ -115,6 +122,7 @@ class ReturnStatementNode : public StatementNode {
     }
 
     void accept(ast_visitor& visitor) override;
+    void accept(const_ast_visitor& visitor) const override;
 };
 
 class AssignmentNode : public StatementNode {
@@ -134,6 +142,7 @@ class AssignmentNode : public StatementNode {
     }
 
     void accept(ast_visitor& visitor) override;
+    void accept(const_ast_visitor& visitor) const override;
 };
 
 class UnaryOperatorASTNode : public ExpressionNode {
@@ -167,6 +176,7 @@ class UnaryOperatorASTNode : public ExpressionNode {
     }
 
     void accept(ast_visitor& visitor) override;
+    void accept(const_ast_visitor& visitor) const override;
 };
 
 class BinaryOperatorASTNode : public ExpressionNode {
@@ -214,6 +224,7 @@ class BinaryOperatorASTNode : public ExpressionNode {
     std::unique_ptr<ExpressionNode> releaseRight() { return std::move(right_child); };
 
     void accept(ast_visitor& visitor) override;
+    void accept(const_ast_visitor& visitor) const override;
 };
 //---------------------------------------------------------------------------
 } // namespace pljit::semantic_analysis

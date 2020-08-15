@@ -24,5 +24,19 @@ class ast_visitor {
     virtual ~ast_visitor() = default;
 };
 
+
+class const_ast_visitor {
+    public:
+    virtual void visit(const FunctionNode&) = 0;
+    virtual void visit(const IdentifierNode&) = 0;
+    virtual void visit(const LiteralNode&) = 0;
+    virtual void visit(const ReturnStatementNode&) = 0;
+    virtual void visit(const AssignmentNode&) = 0;
+    virtual void visit(const UnaryOperatorASTNode&) = 0;
+    virtual void visit(const BinaryOperatorASTNode&) = 0;
+
+    virtual ~const_ast_visitor() = default;
+};
+
 } // namespace pljit::semantic_analysis
 //---------------------------------------------------------------------------
