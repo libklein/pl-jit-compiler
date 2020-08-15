@@ -21,9 +21,8 @@ class SemanticAnalysis : public ::testing::Test {
         pljit::lexer::lexer lexer (code);
         pljit::parser::parser parser(lexer);
         auto parse_tree = parser.parse_function_definition();
-        ast_creation_visitor ast_creator;
-        parse_tree->accept(ast_creator);
-        std::tie(ast, symbolTable) = ast_creator.release_result();
+        EXPECT_TRUE(parse_tree);
+        std::tie(ast, symbolTable) = ast_creation_visitor::AnalyzeParseTree(*parse_tree);
         return ast;
     }
 
@@ -83,6 +82,49 @@ TEST_F(SemanticAnalysis, RedeclarationIdentifier) {
                "RETURN density\n"
                "END.");
     ASSERT_FALSE(ast);
+}
+
+TEST_F(SemanticAnalysis, SymbolTableCapturesAllDeclarations) {
+    using symbol_type = symbol::symbol_type;
+    create_ast("PARAM width, height, depth;\n"
+               "VAR volume, some;\n"
+               "CONST density = 2400;\n"
+                "BEGIN RETURN 0 END.");
+    ASSERT_TRUE(ast);
+    EXPECT_EQ(symbolTable.get_number_of_parameters(), 3);
+    EXPECT_EQ(symbolTable.get_number_of_variables(), 2);
+    EXPECT_EQ(symbolTable.get_number_of_constants(), 1);
+    EXPECT_EQ(symbolTable.size(), 6);
+
+    std::vector<std::tuple<std::string, symbol::symbol_type, int64_t, bool>> expected_symbols {
+        {"width", symbol_type::PARAMETER, 0, true},
+        {"height", symbol_type::PARAMETER, 0, true},
+        {"depth", symbol_type::PARAMETER, 0, true},
+        {"volume", symbol_type::VARIABLE, 0, false},
+        {"some", symbol_type::VARIABLE, 0, false},
+        {"density", symbol_type::CONSTANT, 2400, true}
+    };
+
+    auto next_expected_symbol = expected_symbols.begin();
+    for(const auto &symbol : symbolTable) {
+        auto [expected_name, expected_type, expected_value, initialized] = *next_expected_symbol;
+        EXPECT_EQ(symbol.get_name(), expected_name);
+        EXPECT_EQ(symbol.type, expected_type);
+        EXPECT_EQ(symbol.initialized, initialized);
+        if(symbol.type == symbol_type::CONSTANT) {
+            EXPECT_EQ(symbol.get_value(), expected_value);
+        }
+        ++next_expected_symbol;
+    }
+}
+
+TEST_F(SemanticAnalysis, ConstantsHaveValueSet) {
+    create_ast("CONST density = 2400, a = 10;\n"
+               "BEGIN RETURN density END.");
+
+    ASSERT_TRUE(ast);
+    EXPECT_EQ(symbolTable.constants_begin()->get_value(), 2400);
+    EXPECT_EQ(std::next(symbolTable.constants_begin())->get_value(), 10);
 }
 
 TEST_F(SemanticAnalysis, DOTVisitor) {
