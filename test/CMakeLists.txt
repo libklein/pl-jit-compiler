@@ -3,7 +3,7 @@ set(TEST_SOURCES
     Tester.cpp
     source_management/TestSourceManagement.cpp
     lexer/TestLexer.cpp
-    parser/TestParser.cpp semantic_analysis/TestSemanticAnalysis.cpp)
+    parser/TestParser.cpp semantic_analysis/TestSemanticAnalysis.cpp TestExecutor.cpp)
 
 add_executable(tester ${TEST_SOURCES})
 target_link_libraries(tester PUBLIC
