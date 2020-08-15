@@ -19,10 +19,12 @@ namespace pljit::semantic_analysis {
         std::unique_ptr<ASTNode> next_node;
         symbol_table symbols;
         std::unordered_map<std::string_view, symbol_handle> identifier_mapping;
+        symbol::symbol_type next_symbol_type;
 
         bool construction_failed = false;
 
-        std::pair<symbol_handle, bool> register_symbol(const parser::identifier_node& node, symbol::symbol_type type);
+        std::pair<symbol_handle, bool> register_symbol(const parser::identifier_node& node, symbol::symbol_type type
+                                                       , std::optional<int64_t> value);
         std::optional<symbol_handle> lookup_identifier(std::string_view name) const;
 
         public:
@@ -30,17 +32,20 @@ namespace pljit::semantic_analysis {
          * Analyze a parse tree and return the root of the constructed tree and the symbol table. Should construction fail,
          * returns a nullptr instead of the tree's root.
          */
-        static std::pair<std::unique_ptr<FunctionNode>, symbol_table> AnalyzeParseTree(const parser::function_defition_node & parse_tree);
+        static std::pair<std::unique_ptr<ASTRoot>, symbol_table> AnalyzeParseTree(const parser::function_defition_node & parse_tree);
 
         private:
         // We do not want users to be able to construct our visitor. Instead, they should use the supplied static method
         // as an interface to it.
         ast_creation_visitor() = default;
 
-        std::pair<std::unique_ptr<FunctionNode>, symbol_table> release_result() {
+        std::pair<std::unique_ptr<ASTRoot>, symbol_table> release_result() {
             return {std::move(root), std::move(symbols)};
         }
 
+        // These can still be accessed through a pointer to the base class. However, it is impossible
+        // to get such a pointer using conventional methods as this class cannot be constructed.
+        // We hide the visit functions for the sake of conciseness. TODO Makes sense?
         void visit(const parser::declarator_list_node& node) override;
         void visit(const parser::identifier_node& node) override;
         void visit(const parser::literal_node& node) override;

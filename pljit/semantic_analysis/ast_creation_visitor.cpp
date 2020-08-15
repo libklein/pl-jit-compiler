@@ -46,16 +46,16 @@ auto semantic_analysis::ast_creation_visitor::lookup_identifier(std::string_view
     }
 }
 
-auto semantic_analysis::ast_creation_visitor::register_symbol(const parser::identifier_node& node, semantic_analysis::symbol::symbol_type type) -> std::pair<symbol_handle, bool> {
+auto semantic_analysis::ast_creation_visitor::register_symbol(const parser::identifier_node& node, semantic_analysis::symbol::symbol_type type, std::optional<int64_t> value) -> std::pair<symbol_handle, bool> {
     std::string_view identifier = node.get_token().get_code_reference().str();
     if(auto handle = lookup_identifier(identifier); handle) return {*handle, false};
-    symbol_handle id = symbols.insert(node.get_token().get_code_reference(), type);
+    symbol_handle id = symbols.insert(node.get_token().get_code_reference(), type, value);
     identifier_mapping.emplace(identifier, id);
     return {id, true};
 }
 
 void semantic_analysis::ast_creation_visitor::visit(const parser::init_declarator_node& node) {
-    if(auto [handle, success] = register_symbol(*node.get_identifier(), symbol::CONSTANT); !success){
+    if(auto [handle, success] = register_symbol(*node.get_identifier(), symbol::CONSTANT, node.get_value()->get_value()); !success){
         std::cerr << "Error: Redeclaration of identifier \"" << node.get_identifier()->get_token().get_code_reference().str()
                   << "\" originally defined here: ";
         std::cerr << symbols.get(handle).declaration << std::endl;
@@ -65,9 +65,9 @@ void semantic_analysis::ast_creation_visitor::visit(const parser::init_declarato
 
 void semantic_analysis::ast_creation_visitor::visit(const parser::declarator_list_node& node) {
     for(unsigned int i = 0; i < node.get_number_of_declarations(); ++i) {
-        // No need to distinguish between parameters and variables
-        // TODO Actually, yes
-        if(auto [handle, success] = register_symbol(*node.get_declaration(i), symbol::VARIABLE); !success) {
+        // Distinguish between variables and parameters via next_symbol_type, which is set when
+        // variable/parameter declaration nodes are encountered.
+        if(auto [handle, success] = register_symbol(*node.get_declaration(i), next_symbol_type, std::nullopt); !success) {
             std::cerr << "Error: Redeclaration of identifier \""
                       << node.get_declaration(i)->get_token().get_code_reference().str()
                       << "\" originally defined here: ";
@@ -83,7 +83,6 @@ void semantic_analysis::ast_creation_visitor::visit(const parser::identifier_nod
     if(symbol) {
         next_node = std::make_unique<semantic_analysis::IdentifierNode>(*symbol);
     } else {
-        // TODO Set error state
         std::cerr << "Error: Undeclared identifier \"" << node.get_name() << "\"\n";
         std::cerr << node.get_token().get_code_reference() << std::endl;
         construction_failed = true;
@@ -152,6 +151,9 @@ void semantic_analysis::ast_creation_visitor::visit(const parser::compound_state
 }
 
 void semantic_analysis::ast_creation_visitor::visit(const parser::constant_declaration_node& node) {
+    // Not nessesary in the current implementation (init-declarations can only be constant). But
+    // perhaps nessesary later.
+    next_symbol_type = symbol::CONSTANT;
     node.get_init_declarator_list()->accept(*this);
 }
 
@@ -163,10 +165,12 @@ void semantic_analysis::ast_creation_visitor::visit(const parser::init_declarato
 }
 
 void semantic_analysis::ast_creation_visitor::visit(const parser::parameter_declaration_node& node) {
+    next_symbol_type = symbol::PARAMETER;
     node.get_declarator_list()->accept(*this);
 }
 
 void semantic_analysis::ast_creation_visitor::visit(const parser::variable_declaration_node& node) {
+    next_symbol_type = symbol::VARIABLE;
     node.get_declarator_list()->accept(*this);
 }
 
@@ -234,15 +238,10 @@ void semantic_analysis::ast_creation_visitor::visit(const parser::function_defit
     if(node.has_parameter_declaration) node.get_parameter_declarations()->accept(*this);
     if(construction_failed) return;
 
-    // TODO Handle this properly
-    for(symbol& parameter : symbols) {
-        parameter.initialized = true;
-    }
-
-    if(node.has_constant_declaration) node.get_constant_declarations()->accept(*this);
+    if(node.has_variable_declaration) node.get_variable_declarations()->accept(*this);
     if(construction_failed) return;
 
-    if(node.has_variable_declaration) node.get_variable_declarations()->accept(*this);
+    if(node.has_constant_declaration) node.get_constant_declarations()->accept(*this);
     if(construction_failed) return;
 
     bool returns = false;
