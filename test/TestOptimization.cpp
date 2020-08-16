@@ -20,15 +20,13 @@ class Optimization : public ::testing::Test {
     protected:
     source_code code;
 
-    std::pair<std::unique_ptr<FunctionNode>, symbol_table> create_ast(std::string_view source_string) {
+    std::unique_ptr<FunctionNode> create_ast(std::string_view source_string) {
         code = source_code(source_string);
         pljit::lexer::lexer lexer (code);
         pljit::parser::parser parser(lexer);
         auto parse_tree = parser.parse_function_definition();
         EXPECT_TRUE(parse_tree.get());
-        auto [ast, symbolTable] = ASTCreator::CreateAST(*parse_tree);
-        EXPECT_TRUE(ast.get());
-        return {std::move(ast), std::move(symbolTable)};
+        return ASTCreator::CreateAST(*parse_tree);
     }
 };
 
@@ -42,7 +40,7 @@ namespace {
 } // namespace
 
 TEST_F(Optimization, DeadCodeElimination) {
-    auto [ref_ast, ref_symbols] = create_ast("PARAM width, height, depth;\n"
+    auto ref_ast = create_ast("PARAM width, height, depth;\n"
                "VAR volume, some;\n"
                "CONST density = 2400;\n"
                "BEGIN\n"
@@ -52,7 +50,7 @@ TEST_F(Optimization, DeadCodeElimination) {
                "END.");
 
 
-    auto [optimized_ast, optimized_symbols] = create_ast("PARAM width, height, depth;\n"
+    auto optimized_ast = create_ast("PARAM width, height, depth;\n"
                               "VAR volume, some;\n"
                               "CONST density = 2400;\n"
                               "BEGIN\n"
@@ -71,7 +69,7 @@ TEST_F(Optimization, DeadCodeElimination) {
 }
 
 TEST_F(Optimization, ConstantPropagation) {
-    auto [ref_ast, ref_symbols] = create_ast("PARAM width;\n"
+    auto ref_ast = create_ast("PARAM width;\n"
                                              "VAR volume, some;\n"
                                              "CONST density = 10;\n"
                                              "BEGIN\n"
@@ -81,7 +79,7 @@ TEST_F(Optimization, ConstantPropagation) {
                                              "END.");
 
 
-    auto [optimized_ast, optimized_symbols] = create_ast("PARAM width;\n"
+    auto optimized_ast = create_ast("PARAM width;\n"
                                              "VAR volume, some;\n"
                                              "CONST density = 10;\n"
                                              "BEGIN\n"
@@ -94,7 +92,37 @@ TEST_F(Optimization, ConstantPropagation) {
 
     pljit::optimization::passes::constant_propagation cp;
     cp.optimize_ast(optimized_ast);
-    std::cout << to_dot(*optimized_ast) << std::endl;
+
+    // Unary plus removal to ensure that the two graphs match
+    pljit::optimization::passes::UnaryPlusRemoval upr;
+    upr.optimize_ast(ref_ast);
+
+    ASSERT_EQ(to_dot(*ref_ast), to_dot(*optimized_ast));
+}
+
+TEST_F(Optimization, ConstantPropagationDivisionByZero) {
+    auto ref_ast = create_ast("PARAM width;\n"
+                                             "VAR volume, some;\n"
+                                             "CONST density = 0;\n"
+                                             "BEGIN\n"
+                                             "volume := 0;\n"
+                                             "some := 10;\n"
+                                             "RETURN 0 / 0 \n"
+                                             "END.");
+
+    auto optimized_ast = create_ast("PARAM width;\n"
+                                                         "VAR volume, some;\n"
+                                                         "CONST density = 0;\n"
+                                                         "BEGIN\n"
+                                                         "volume := density;\n"
+                                                         "some := volume + 10;\n"
+                                                         "RETURN density / volume\n"
+                                                         "END.");
+
+    ASSERT_NE(to_dot(*ref_ast), to_dot(*optimized_ast));
+
+    pljit::optimization::passes::constant_propagation cp;
+    cp.optimize_ast(optimized_ast);
 
     // Unary plus removal to ensure that the two graphs match
     pljit::optimization::passes::UnaryPlusRemoval upr;

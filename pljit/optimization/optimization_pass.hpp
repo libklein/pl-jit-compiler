@@ -57,7 +57,6 @@ class optimization_pass {
 
     void optimize_ast(std::unique_ptr<pljit::semantic_analysis::FunctionNode>& ast);
 
-    // TODO Make abstract
     virtual ~optimization_pass() = default;
 };
 

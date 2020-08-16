@@ -1,15 +1,9 @@
 #pragma once
+
+#include "ast_fwd.hpp"
+
 //---------------------------------------------------------------------------
 namespace pljit::semantic_analysis {
-
-class ASTNode;
-class FunctionNode;
-class IdentifierNode;
-class LiteralNode;
-class ReturnStatementNode;
-class AssignmentNode;
-class UnaryOperatorASTNode;
-class BinaryOperatorASTNode;
 
 class ast_visitor {
     public:

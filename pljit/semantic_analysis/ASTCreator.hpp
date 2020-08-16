@@ -2,9 +2,9 @@
 #ifndef PLJIT_ASTCREATOR_HPP
 #define PLJIT_ASTCREATOR_HPP
 
-// TODO Replace with ast_fwd
 #include "pljit/semantic_analysis/symbol_table.hpp"
-#include "pljit/semantic_analysis/AST.hpp"
+#include "pljit/parser/parser_fwd.hpp"
+#include "pljit/semantic_analysis/ast_fwd.hpp"
 
 //---------------------------------------------------------------------------
 namespace pljit::semantic_analysis {
@@ -32,7 +32,7 @@ class ASTCreator {
     std::unique_ptr<pljit::semantic_analysis::FunctionNode> analyze_function(const pljit::parser::function_definition_node& parseTree);
 
     public:
-    static std::pair<std::unique_ptr<pljit::semantic_analysis::FunctionNode>, pljit::semantic_analysis::symbol_table> CreateAST(const pljit::parser::function_definition_node& parseTree);
+    static std::unique_ptr<pljit::semantic_analysis::FunctionNode> CreateAST(const pljit::parser::function_definition_node& parseTree);
 };
 } // namespace pljit::semantic_analysis
 #endif //PLJIT_ASTCREATOR_HPP

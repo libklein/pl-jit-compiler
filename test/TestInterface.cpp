@@ -11,10 +11,10 @@ TEST(InterfaceTest, SingleThread) {
     auto handle = compiler.register_function("PARAM a, b;BEGIN RETURN a + b END.");
     auto result = handle(1, 2);
     ASSERT_TRUE(result);
-    EXPECT_EQ(*result, 3);
+    EXPECT_EQ(*result.get_result(), 3);
     result = handle(3, 5);
     ASSERT_TRUE(result);
-    EXPECT_EQ(*result, 8);
+    EXPECT_EQ(*result.get_result(), 8);
 }
 
 TEST(InterfaceTest, SingleThreadInvalidProgram) {
@@ -45,7 +45,7 @@ TEST(InterfaceTest, MultithreadedCompilation) {
             thread_pool.emplace_back([handle]() mutable {
                 auto res = handle();
                 ASSERT_TRUE(res);
-                EXPECT_EQ(*res, 10);
+                EXPECT_EQ(*res.get_result(), 10);
             });
         }
 

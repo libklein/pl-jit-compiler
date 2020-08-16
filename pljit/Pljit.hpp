@@ -7,10 +7,13 @@
 #include <mutex>
 #include <vector>
 
-#include "pljit/semantic_analysis/symbol_table.hpp"
+#include "pljit/execution/ExecutionContext.hpp"
 #include <string_view>
 
 namespace pljit {
+    // using in header for user convenience.
+    using ExecutionContext = execution::ExecutionContext;
+
     namespace semantic_analysis {
         class FunctionNode;
     } // namespace semantic_analysis
@@ -19,7 +22,6 @@ namespace pljit {
         std::mutex compilation_mutex;
         source_management::source_code source_code;
         std::unique_ptr<semantic_analysis::FunctionNode> ast;
-        semantic_analysis::symbol_table symbol_table;
         bool compilation_failed = false;
 
 #ifndef NDEBUG
@@ -27,15 +29,20 @@ namespace pljit {
 #endif
 
         void compile();
-        std::optional<int64_t> call_impl(std::initializer_list<int64_t>);
+        execution::ExecutionContext call_impl(std::initializer_list<int64_t>);
 
         public:
         explicit Function(std::string source);
 
-        template<class... Args>
-        std::optional<int64_t> operator()(Args... args) {
+        template <class... Args, class = typename std::enable_if_t<std::conjunction_v<std::is_convertible<Args, int64_t>...>>>
+        ExecutionContext operator()(Args... args) {
             static_assert(std::conjunction_v<std::is_convertible<Args, int64_t>...>, "PL supports only int64_t parameters.");
             // std::forward is not superfluous, we may pass arbitrary types convertible to int64_t.
+            if(!ast && !compilation_failed) {
+                // Compile function first
+                compile();
+            }
+            if(compilation_failed) return {};
             return call_impl({std::forward<Args>(args)...});
         }
         ~Function();
@@ -62,8 +69,8 @@ namespace pljit {
         explicit function_handle(Pljit* pljit, unsigned function_id) : pljit(pljit), function_id(function_id) {};
 
         public:
-        template<class... Args>
-        std::optional<int64_t> operator()(Args... args) {
+        template <class... Args, class = typename std::enable_if_t<std::conjunction_v<std::is_convertible<Args, int64_t>...>>>
+         ExecutionContext operator()(Args... args) {
             static_assert(std::conjunction_v<std::is_convertible<Args, int64_t>...>, "PL supports only int64_t parameters.");
             // std::forward is not superfluous, we may pass arbitrary types convertible to int64_t.
             return pljit->get(function_id)(std::forward<Args>(args)...);

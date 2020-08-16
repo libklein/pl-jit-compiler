@@ -21,9 +21,9 @@ class Execution : public ::testing::Test {
         pljit::parser::parser parser(lexer);
         auto parse_tree = parser.parse_function_definition();
         EXPECT_TRUE(parse_tree);
-        auto [ast, symbolTable] = ASTCreator::CreateAST(*parse_tree);
+        auto ast = ASTCreator::CreateAST(*parse_tree);
         EXPECT_TRUE(ast);
-        pljit::execution::ExecutionContext context(symbolTable, std::forward<Args>(parameters)...);
+        pljit::execution::ExecutionContext context(ast->getSymbolTable(), std::forward<Args>(parameters)...);
         std::optional<int64_t> res = ast->evaluate(context);
         EXPECT_EQ(res.has_value(), context.get_result().has_value());
         if(res) {

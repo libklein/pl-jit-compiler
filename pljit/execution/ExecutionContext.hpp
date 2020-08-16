@@ -14,14 +14,15 @@ namespace pljit::semantic_analysis {
 namespace pljit::execution {
 
 class ExecutionContext {
-    // TODO Keep track of variables, parameters and constants
     std::vector<int64_t> symbols;
     std::optional<int64_t> result;
 
     public:
-    template <class... Args>
+    // Indicates execution/compilation failure
+    ExecutionContext() = default;
+
+    template <class... Args, class = typename std::enable_if_t<std::conjunction_v<std::is_convertible<Args, int64_t>...>>>
     explicit ExecutionContext(const pljit::semantic_analysis::symbol_table& symbolTable, Args... param) : symbols(0), result{} {
-        static_assert(std::conjunction_v<std::is_convertible<Args, int64_t>...>, "Parameters must be integers!");
         assert(symbolTable.get_number_of_parameters() == sizeof...(param));
         symbols.reserve(symbolTable.size()); // Avoid reallocation
         // Add parameters
@@ -33,6 +34,18 @@ class ExecutionContext {
             symbols[next_constant->id] = next_constant->get_value();
         }
     }
+
+    explicit ExecutionContext(const pljit::semantic_analysis::symbol_table& symbolTable, const std::vector<int64_t>& parameters) {
+        symbols.resize(symbolTable.size());
+        std::copy(parameters.begin(), parameters.end(), symbols.begin());
+
+        for(auto next_constant = symbolTable.constants_begin(); next_constant != symbolTable.constants_end(); ++next_constant) {
+            assert(next_constant->initialized);
+            symbols[next_constant->id] = next_constant->get_value();
+        }
+    }
+
+    explicit operator bool() const;
 
     void set_value(unsigned variable_id, int64_t value);
     int64_t get_value(unsigned variable_id) const;

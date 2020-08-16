@@ -13,3 +13,6 @@ void pljit::execution::ExecutionContext::set_result(std::optional<int64_t> res) 
 std::optional<int64_t> pljit::execution::ExecutionContext::get_result() const {
     return result;
 }
+pljit::execution::ExecutionContext::operator bool() const {
+    return result.has_value();
+}

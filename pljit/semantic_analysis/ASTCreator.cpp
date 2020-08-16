@@ -213,7 +213,7 @@ std::unique_ptr<ExpressionNode> ASTCreator::analyze_expression(const parser::pri
     }
     return nullptr;
 }
-std::pair<std::unique_ptr<FunctionNode>, symbol_table> ASTCreator::CreateAST(const parser::function_definition_node& parseTree) {
+std::unique_ptr<pljit::semantic_analysis::FunctionNode> ASTCreator::CreateAST(const parser::function_definition_node& parseTree) {
     ASTCreator ast_creator;
-    return {ast_creator.analyze_function(parseTree), std::move(ast_creator.symbols)};
+    return ast_creator.analyze_function(parseTree);
 }

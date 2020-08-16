@@ -1,21 +1,17 @@
 
 #include "Pljit.hpp"
-#include "Executor.hpp"
+#include "pljit/execution/ExecutionContext.hpp"
+#include "pljit/semantic_analysis/AST.hpp"
 #include "pljit/lexer/lexer.hpp"
 #include "pljit/parser/parser.hpp"
-#include "pljit/semantic_analysis/AST.hpp"
 #include "pljit/semantic_analysis/ASTCreator.hpp"
 
 using namespace pljit;
 
-std::optional<int64_t> Function::call_impl(std::initializer_list<int64_t> parameters) {
-    if(!ast && !compilation_failed) {
-        // Compile function first
-        compile();
-    }
-    if(compilation_failed) return std::nullopt;
-    std::vector<int64_t> param(parameters);
-    return Executor::Execute(*ast, symbol_table, param);
+execution::ExecutionContext Function::call_impl(std::initializer_list<int64_t> parameters) {
+    execution::ExecutionContext context(ast->getSymbolTable(), parameters);
+    ast->evaluate(context);
+    return context;
 }
 
 void Function::compile() {
@@ -33,7 +29,7 @@ void Function::compile() {
         return;
     }
 
-    std::tie(ast, symbol_table)= pljit::semantic_analysis::ASTCreator::CreateAST(*parse_tree);
+    ast = pljit::semantic_analysis::ASTCreator::CreateAST(*parse_tree);
 
     if(!ast) compilation_failed = true;
 

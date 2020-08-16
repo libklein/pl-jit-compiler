@@ -7,47 +7,11 @@ using namespace pljit::semantic_analysis;
 
 using ExpressionPtr = std::unique_ptr<ExpressionNode>;
 
-/*
-void pljit::optimization::passes::constant_propagation::visit(pljit::semantic_analysis::FunctionNode& node) {
-    // First pass
-    if(getNumberOfPasses()) {
-        for (unsigned i = 0; i < node.get_number_of_statements(); ++i) {
-            node.get_statement(i)->accept(*this);
-        }
-    }
-}
-void pljit::optimization::passes::constant_propagation::visit(pljit::semantic_analysis::IdentifierNode& node) {
-    if(const auto& symbol = symbolTable->get(node.get_symbol_handle()); symbol.type == semantic_analysis::symbol::CONSTANT) {
-        expression_mapping.emplace(&node, symbolTable->get(node.get_symbol_handle()).constant_value);
-        return;
-    } else if (symbol.type == semantic_analysis::symbol::VARIABLE) {
-        // TODO Is the variable constant?
-    }
-}
-void pljit::optimization::passes::constant_propagation::visit(pljit::semantic_analysis::LiteralNode& node) {
-    expression_mapping.emplace(&node, node.get_value());
-}
-void pljit::optimization::passes::constant_propagation::visit(pljit::semantic_analysis::ReturnStatementNode& node) {
-}
-void pljit::optimization::passes::constant_propagation::visit(pljit::semantic_analysis::AssignmentNode& node) {
-}
-void pljit::optimization::passes::constant_propagation::visit(pljit::semantic_analysis::UnaryOperatorASTNode& node) {
-    node.getInput().accept(*this);
-    if(get_value(&node.getInput())) {
-        //node.setInput(node);
-        // Result of unary expression must be constant too
-        //expression_mapping.emplace(&node, );
-    }
-}
-void pljit::optimization::passes::constant_propagation::visit(pljit::semantic_analysis::BinaryOperatorASTNode& node) {
-}
-*/
-
-
-
 void pljit::optimization::passes::constant_propagation::optimize(pljit::semantic_analysis::FunctionNode& node) {
-    // TODO
-    executionContext = std::make_unique<pljit::execution::ExecutionContext>(*symbolTable, 0);
+    {
+        std::vector<int64_t> parameters(symbolTable->get_number_of_parameters(), 0);
+        executionContext = std::make_unique<pljit::execution::ExecutionContext>(*symbolTable, parameters);
+    }
     constant_variables.resize(symbolTable->size());
 
     for(unsigned i = 0; i < symbolTable->size(); ++i) {
@@ -56,11 +20,7 @@ void pljit::optimization::passes::constant_propagation::optimize(pljit::semantic
                 constant_variables[i] = symbolTable->get(i).constant_value;
                 break;
             }
-            case symbol::PARAMETER: {
-                constant_variables[i] = std::nullopt;
-                break;
-            }
-            case symbol::VARIABLE: {
+            default: { // Anything that is not a constant is non-constant at first
                 constant_variables[i] = std::nullopt;
                 break;
             }
@@ -97,16 +57,7 @@ std::unique_ptr<pljit::semantic_analysis::ExpressionNode> pljit::optimization::p
     node->getLeft().optimize(node->releaseLeft(), *this);
     node->getRight().optimize(node->releaseRight(), *this);
     if(get_value(&node->getLeft()) && get_value(&node->getRight())) {
-        // Evaluate this node
-        auto result = node->evaluate(*executionContext);
-        if(!result) {
-            throw std::logic_error("TODO");
-        }
-        // Replace with proper value
-        auto const_node = std::make_unique<pljit::semantic_analysis::LiteralNode>(*result);
-        // Push to mapping
-        expression_mapping.emplace(const_node.get(), *result);
-        return const_node; // Replace with constant
+        return replace_expression(std::move(node));
     }
     return node;
 }
@@ -143,7 +94,8 @@ ExpressionPtr pljit::optimization::passes::constant_propagation::replace_express
     // Evaluate this node
     auto result = node->evaluate(*executionContext);
     if(!result) {
-        throw std::logic_error("TODO");
+        // Should an error occur during computation, leave the tree as is
+        return node;
     }
     // Replace with proper value
     auto const_node = std::make_unique<pljit::semantic_analysis::LiteralNode>(*result);

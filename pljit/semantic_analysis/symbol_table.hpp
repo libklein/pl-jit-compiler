@@ -2,8 +2,8 @@
 #ifndef PLJIT_SYMBOL_TABLE_HPP
 #define PLJIT_SYMBOL_TABLE_HPP
 
-#include "pljit/source_management/source_code.hpp"
 #include <string_view>
+#include "pljit/source_management/source_code.hpp"
 
 namespace pljit::semantic_analysis {
 
@@ -16,7 +16,7 @@ namespace pljit::semantic_analysis {
 
         source_management::source_code::SourceFragment declaration;
         symbol_type type;
-        std::size_t id; // TODO nessesary?
+        std::size_t id;
         bool initialized;
         int64_t constant_value;
 

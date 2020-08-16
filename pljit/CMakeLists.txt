@@ -8,9 +8,7 @@ set(PLJIT_SOURCES
     semantic_analysis/AST.cpp
     semantic_analysis/ASTCreator.cpp
     semantic_analysis/symbol_table.cpp
-    semantic_analysis/ast_creation_visitor.cpp
     semantic_analysis/dot_print_visitor.cpp
-    Executor.cpp
     optimization/optimization_pass.cpp
     optimization/passes/dead_code_elimination.cpp
     optimization/passes/constant_propagation.cpp
