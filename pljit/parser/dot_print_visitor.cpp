@@ -62,7 +62,7 @@ void dot_print_visitor::visit(const statement_list_node& node) {
 void dot_print_visitor::visit(const statement_node& node) {
     write_non_terminal_node(node);
 }
-void dot_print_visitor::visit(const function_defition_node& node) {
+void dot_print_visitor::visit(const function_definition_node& node) {
     out << "graph {\n";
     write_non_terminal_node(node);
     out << "}";

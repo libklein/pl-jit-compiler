@@ -5,7 +5,7 @@
 void pljit::parser::terminal_node::accept(pljit::parser::parse_tree_visitor& visitor) const {
     visitor.visit(*this);
 }
-void pljit::parser::function_defition_node::accept(pljit::parser::parse_tree_visitor& visitor) const {
+void pljit::parser::function_definition_node::accept(pljit::parser::parse_tree_visitor& visitor) const {
     visitor.visit(*this);
 }
 void pljit::parser::constant_declaration_node::accept(pljit::parser::parse_tree_visitor& visitor) const {

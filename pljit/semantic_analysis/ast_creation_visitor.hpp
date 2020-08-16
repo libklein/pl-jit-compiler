@@ -32,7 +32,7 @@ namespace pljit::semantic_analysis {
          * Analyze a parse tree and return the root of the constructed tree and the symbol table. Should construction fail,
          * returns a nullptr instead of the tree's root.
          */
-        static std::pair<std::unique_ptr<ASTRoot>, symbol_table> AnalyzeParseTree(const parser::function_defition_node & parse_tree);
+        static std::pair<std::unique_ptr<ASTRoot>, symbol_table> AnalyzeParseTree(const parser::function_definition_node& parse_tree);
 
         private:
         // We do not want users to be able to construct our visitor. Instead, they should use the supplied static method
@@ -61,7 +61,7 @@ namespace pljit::semantic_analysis {
         void visit(const parser::primary_expression_node& node) override;
         void visit(const parser::statement_list_node& node) override;
         void visit(const parser::statement_node& node) override;
-        void visit(const parser::function_defition_node& node) override;
+        void visit(const parser::function_definition_node& node) override;
         void visit(const parser::unary_expression_node& node) override;
         void visit(const parser::variable_declaration_node& node) override;
     };

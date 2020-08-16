@@ -3,7 +3,6 @@
 #include "pljit/semantic_analysis/AST.hpp"
 #include "pljit/lexer/lexer.hpp"
 #include "pljit/parser/parser.hpp"
-#include "pljit/semantic_analysis/ast_creation_visitor.hpp"
 #include "Executor.hpp"
 
 using namespace pljit;
@@ -33,7 +32,7 @@ void Function::compile() {
         return;
     }
 
-    std::tie(ast, symbol_table)= pljit::semantic_analysis::ast_creation_visitor::AnalyzeParseTree(*parse_tree);
+    std::tie(ast, symbol_table)= pljit::semantic_analysis::ASTCreator::CreateAST(*parse_tree);
 
     if(!ast) compilation_failed = true;
 

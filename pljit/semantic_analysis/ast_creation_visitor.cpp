@@ -1,6 +1,7 @@
 
 #include "ast_creation_visitor.hpp"
 #include "pljit/lexer/token.hpp"
+#include "pljit/parser/parse_tree_nodes.hpp"
 #include <memory>
 #include <cassert>
 
@@ -32,7 +33,7 @@ namespace {
     }
 } // namespace
 
-auto semantic_analysis::ast_creation_visitor::AnalyzeParseTree(const parser::function_defition_node& parse_tree) -> std::pair<std::unique_ptr<FunctionNode>, symbol_table> {
+auto semantic_analysis::ast_creation_visitor::AnalyzeParseTree(const parser::function_definition_node& parse_tree) -> std::pair<std::unique_ptr<FunctionNode>, symbol_table> {
     ast_creation_visitor ast_creator;
     parse_tree.accept(ast_creator);
     return ast_creator.release_result();
@@ -232,7 +233,7 @@ void semantic_analysis::ast_creation_visitor::visit(const parser::statement_node
     }
 }
 
-void semantic_analysis::ast_creation_visitor::visit(const parser::function_defition_node& node) {
+void semantic_analysis::ast_creation_visitor::visit(const parser::function_definition_node& node) {
     construction_failed = false;
     // Parse declarations
     if(node.has_parameter_declaration) node.get_parameter_declarations()->accept(*this);

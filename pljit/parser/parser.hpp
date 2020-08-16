@@ -337,7 +337,7 @@ namespace pljit::parser {
         }
 
         public:
-        std::unique_ptr<function_defition_node> parse_function_definition() {
+        std::unique_ptr<function_definition_node> parse_function_definition() {
             auto param_decl = parse_parameter_declaration();
             if(has_error()) { // A non-recoverable error has been detected
                 return nullptr;
@@ -358,7 +358,7 @@ namespace pljit::parser {
                         return nullptr;
                     }
 
-                    return std::make_unique<function_defition_node>(
+                    return std::make_unique<function_definition_node>(
                         std::move(param_decl),
                         std::move(var_decl),
                         std::move(const_decl),

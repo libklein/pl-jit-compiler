@@ -2,7 +2,6 @@
 #include <pljit/parser/parser.hpp>
 #include <pljit/semantic_analysis/AST.hpp>
 #include <pljit/semantic_analysis/dot_print_visitor.hpp>
-#include <pljit/semantic_analysis/ast_creation_visitor.hpp>
 #include <pljit/source_management/source_code.hpp>
 #include <gtest/gtest.h>
 
@@ -22,7 +21,7 @@ class SemanticAnalysis : public ::testing::Test {
         pljit::parser::parser parser(lexer);
         auto parse_tree = parser.parse_function_definition();
         EXPECT_TRUE(parse_tree);
-        std::tie(ast, symbolTable) = ast_creation_visitor::AnalyzeParseTree(*parse_tree);
+        std::tie(ast, symbolTable) = ASTCreator::CreateAST(*parse_tree);
         return ast;
     }
 

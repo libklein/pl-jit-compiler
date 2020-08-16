@@ -10,7 +10,7 @@ namespace pljit::parser {
     class assignment_expression_node;
     class compound_statement_node;
     class constant_declaration_node;
-    class function_defition_node;
+    class function_definition_node;
     class init_declarator_node;
     class init_declarator_list_node;
     class declarator_list_node;
@@ -21,7 +21,7 @@ namespace pljit::parser {
     class primary_expression_node;
     class statement_list_node;
     class statement_node;
-    class function_defition_node;
+    class function_definition_node;
     class unary_expression_node;
     class variable_declaration_node;
 
@@ -43,7 +43,7 @@ namespace pljit::parser {
         virtual void visit(const primary_expression_node&) = 0;
         virtual void visit(const statement_list_node&) = 0;
         virtual void visit(const statement_node&) = 0;
-        virtual void visit(const function_defition_node&) = 0;
+        virtual void visit(const function_definition_node&) = 0;
         virtual void visit(const unary_expression_node&) = 0;
         virtual void visit(const variable_declaration_node&) = 0;
 

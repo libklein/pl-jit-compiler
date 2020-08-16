@@ -21,8 +21,9 @@ namespace pljit::semantic_analysis {
         int64_t constant_value;
 
         std::string_view get_name() const;
-
         int64_t get_value() const;
+
+        void set_initialized();
     };
 
     /**

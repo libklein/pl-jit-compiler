@@ -41,7 +41,7 @@ namespace pljit::parser {
         void visit(const primary_expression_node& node) override;
         void visit(const statement_list_node& node) override;
         void visit(const statement_node& node) override;
-        void visit(const function_defition_node& node) override;
+        void visit(const function_definition_node& node) override;
         void visit(const unary_expression_node& node) override;
         void visit(const variable_declaration_node& node) override;
     };

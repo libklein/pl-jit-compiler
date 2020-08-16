@@ -14,7 +14,7 @@ class ParserTest : public ::testing::Test {
     protected:
     source_code code;
 
-    std::unique_ptr<function_defition_node> parse_code(std::string_view source_code_string) {
+    std::unique_ptr<function_definition_node> parse_code(std::string_view source_code_string) {
         code = source_code(source_code_string);
         lexer l(code);
         parser parser(l);

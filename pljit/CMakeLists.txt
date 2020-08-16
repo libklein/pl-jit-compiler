@@ -9,7 +9,12 @@ set(PLJIT_SOURCES
     semantic_analysis/symbol_table.cpp
     semantic_analysis/ast_creation_visitor.cpp
     semantic_analysis/dot_print_visitor.cpp
-    Executor.cpp)
+    Executor.cpp
+    #optimization/optimization_pass.cpp
+    #optimization/passes/dead_code_elimination.cpp
+    #optimization/passes/constant_propagation.cpp
+    Pljit.cpp
+    execution/ExecutionContext.cpp)
 
 add_library(pljit_core ${PLJIT_SOURCES})
 target_include_directories(pljit_core PUBLIC ${CMAKE_SOURCE_DIR})

@@ -1,7 +1,7 @@
 #pragma once
 //---------------------------------------------------------------------------
 #include "ast_visitor.hpp"
-#include "pljit/parser/parse_tree_nodes.hpp"
+#include "pljit/parser/parser_fwd.hpp"
 #include "pljit/semantic_analysis/symbol_table.hpp"
 #include <memory>
 #include <ostream>
@@ -11,7 +11,9 @@
 namespace pljit::execution {
     class ExecutionContext; // Forward declare execution context
 } // namespace pljit::execution
-
+namespace pljit::optimization {
+    class optimization_pass;
+}
 namespace pljit::semantic_analysis {
 class ast_visitor; // Forward declare visitor
 class FunctionNode;
@@ -42,6 +44,7 @@ class ASTNode {
         return type;
     };
 
+    virtual std::unique_ptr<ASTNode> optimize(std::unique_ptr<ASTNode>& self, optimization::optimization_pass& optimizer) { return nullptr; };
     virtual std::optional<int64_t> evaluate(execution::ExecutionContext& context) const = 0;
     virtual void accept(ast_visitor& visitor) = 0;
     virtual void accept(const_ast_visitor& visitor) const = 0;
@@ -236,5 +239,31 @@ class BinaryOperatorASTNode : public ExpressionNode {
     void accept(const_ast_visitor& visitor) const override;
 };
 //---------------------------------------------------------------------------
+class ASTCreator {
+    private:
+    symbol_table symbols;
+    using symbol_handle = symbol_table::size_type;
+    std::unordered_map<std::string_view, symbol_handle> identifier_mapping;
+
+    // Helpers for the symbol table
+    std::pair<symbol_handle, bool> register_symbol(const parser::identifier_node& node, symbol::symbol_type type
+        , std::optional<int64_t> value);
+
+    bool analyze_declarations(const parser::declarator_list_node& node, symbol::symbol_type symbolType);
+    bool analyze_declarations(const parser::init_declarator_list_node& node, symbol::symbol_type symbolType);
+
+    std::unique_ptr<IdentifierNode> analyze_identifier(const parser::identifier_node& node);
+    std::unique_ptr<LiteralNode> analyze_literal(const parser::literal_node& node);
+    std::unique_ptr<ReturnStatementNode> analyze_return_statement(const parser::statement_node& node);
+    std::unique_ptr<AssignmentNode> analyze_assignment_node(const parser::assignment_expression_node& node);
+
+    std::unique_ptr<UnaryOperatorASTNode> analyze_expression(const parser::unary_expression_node& node);
+    std::unique_ptr<ExpressionNode> analyze_expression(const parser::multiplicative_expression_node& node);
+    std::unique_ptr<ExpressionNode> analyze_expression(const parser::additive_expression_node& node);
+    std::unique_ptr<ExpressionNode> analyze_expression(const parser::primary_expression_node& node);
+    std::unique_ptr<FunctionNode> analyze_function(const parser::function_definition_node& parseTree);
+    public:
+    static std::pair<std::unique_ptr<FunctionNode>, symbol_table> CreateAST(const parser::function_definition_node& parseTree);
+};
 } // namespace pljit::semantic_analysis
 //---------------------------------------------------------------------------

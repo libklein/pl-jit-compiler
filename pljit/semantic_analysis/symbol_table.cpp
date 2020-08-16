@@ -52,3 +52,6 @@ int64_t symbol::get_value() const {
 std::string_view symbol::get_name() const {
     return declaration.str();
 }
+void symbol::set_initialized() {
+    initialized = true;
+}
