@@ -94,7 +94,7 @@ bool SourceFragment::operator!=(const SourceFragment& rhs) const {
 std::ostream& operator<<(std::ostream& os, const SourceFragment& fragment) {
     return fragment.output_to_stream(os);
 }
-void SourceFragment::extend(SourceFragment& other) {
+void SourceFragment::extend(const SourceFragment& other) {
     if(other.end() > end()) {
         end_pos = other.end_pos;
     }

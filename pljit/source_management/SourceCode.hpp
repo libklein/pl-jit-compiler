@@ -89,7 +89,7 @@ class SourceFragment {
     explicit SourceFragment(SourcePosition begin);
     SourceFragment(SourcePosition begin, SourcePosition end);
 
-    void extend(SourceFragment &other);
+    void extend(const SourceFragment &other);
 
     auto begin() const;
 
