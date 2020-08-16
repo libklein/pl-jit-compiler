@@ -1,13 +1,13 @@
 #include "pljit/semantic_analysis/ASTCreator.hpp"
 #include <pljit/execution/ExecutionContext.hpp>
 #include <pljit/lexer/lexer.hpp>
+#include <pljit/optimization/passes/UnaryPlusRemoval.hpp>
 #include <pljit/optimization/passes/constant_propagation.hpp>
 #include <pljit/optimization/passes/dead_code_elimination.hpp>
-#include <pljit/optimization/passes/UnaryPlusRemoval.hpp>
 #include <pljit/parser/parser.hpp>
 #include <pljit/semantic_analysis/AST.hpp>
 #include <pljit/semantic_analysis/dot_print_visitor.hpp>
-#include <pljit/source_management/source_code.hpp>
+#include <pljit/source_management/SourceCode.hpp>
 #include <gtest/gtest.h>
 
 using namespace pljit;
@@ -18,10 +18,10 @@ using namespace pljit::lexer;
 
 class Optimization : public ::testing::Test {
     protected:
-    source_code code;
+    SourceCode code;
 
     std::unique_ptr<FunctionNode> create_ast(std::string_view source_string) {
-        code = source_code(source_string);
+        code = SourceCode(source_string);
         pljit::lexer::lexer lexer (code);
         pljit::parser::parser parser(lexer);
         auto parse_tree = parser.parse_function_definition();

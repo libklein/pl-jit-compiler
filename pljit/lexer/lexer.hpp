@@ -5,7 +5,7 @@
 #ifndef PLJIT_LEXER_HPP
 #define PLJIT_LEXER_HPP
 
-#include "pljit/source_management/source_code.hpp"
+#include "pljit/source_management/SourceCode.hpp"
 #include "token.hpp"
 
 namespace pljit::lexer {
@@ -38,7 +38,7 @@ class lexer {
     static std::optional<token> parse_keyword(source_management::SourceFragment fragment);
 
     public:
-    explicit lexer(const source_management::source_code& code) : input_iter(code.begin()), eos(code.end()) {};
+    explicit lexer(const source_management::SourceCode& code) : input_iter(code.begin()), eos(code.end()) {};
     /// Consumes next token
     auto next() -> std::optional<token>;
     source_management::SourcePosition get_current_position() const;

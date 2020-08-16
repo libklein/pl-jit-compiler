@@ -3,7 +3,7 @@
 #include <pljit/parser/dot_print_visitor.hpp>
 #include <pljit/parser/parse_tree_nodes.hpp>
 #include <pljit/parser/parser.hpp>
-#include <pljit/source_management/source_code.hpp>
+#include <pljit/source_management/SourceCode.hpp>
 #include <gtest/gtest.h>
 
 using namespace pljit::source_management;
@@ -12,10 +12,10 @@ using namespace pljit::lexer;
 
 class ParserTest : public ::testing::Test {
     protected:
-    source_code code;
+    SourceCode code;
 
     std::unique_ptr<function_definition_node> parse_code(std::string_view source_code_string) {
-        code = source_code(source_code_string);
+        code = SourceCode(source_code_string);
         lexer l(code);
         parser parser(l);
         return parser.parse_function_definition();

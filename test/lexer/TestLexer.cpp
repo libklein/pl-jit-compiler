@@ -1,6 +1,6 @@
 
 #include "pljit/lexer/lexer.hpp"
-#include "pljit/source_management/source_code.hpp"
+#include "pljit/source_management/SourceCode.hpp"
 #include <array>
 #include <gtest/gtest.h>
 
@@ -9,7 +9,7 @@ using namespace pljit::lexer;
 
 class LexerTest : public ::testing::Test {
     protected:
-    const source_code code{"PARAM width, height, depth;\n"
+    const SourceCode code{"PARAM width, height, depth;\n"
                     "VAR volume;\n"
                     "CONST density = 2400;\n"
                     "BEGIN\n"
@@ -74,7 +74,7 @@ TEST_F(LexerTest, SimpleProgramTest) {
 
 TEST_F(LexerTest, IndividualTokenRecognition) {
     for(auto [expected_token_type, test_string] : token_repr_map) {
-        source_code code(test_string.data());
+        SourceCode code(test_string.data());
         lexer l(code);
         auto token = l.next();
         EXPECT_TRUE(token.has_value());
@@ -91,7 +91,7 @@ TEST_F(LexerTest, InvalidSymbol) {
     for(char invalid_char : invalid_symbols) {
         // Invalid symbol at begin
         {
-            source_code code(invalid_char+std::string("sas"));
+            SourceCode code(invalid_char+std::string("sas"));
             lexer l(code);
             auto next_token = l.next();
             EXPECT_FALSE(next_token);
@@ -99,7 +99,7 @@ TEST_F(LexerTest, InvalidSymbol) {
         }
         // Invalid symbol wrapped by whitespace
         {
-            source_code code(std::string(" \t\n") + invalid_char + std::string("   "));
+            SourceCode code(std::string(" \t\n") + invalid_char + std::string("   "));
             lexer l(code);
             auto next_token = l.next();
             EXPECT_FALSE(next_token);
@@ -107,7 +107,7 @@ TEST_F(LexerTest, InvalidSymbol) {
         }
         // Invalid symbol in a keyword
         {
-            source_code code(template_code + invalid_char + "sda;");
+            SourceCode code(template_code + invalid_char + "sda;");
             lexer l(code);
             EXPECT_EQ(l.next()->Type(), BEGIN);
             // "somidenti" should be parsed correctly.
@@ -121,7 +121,7 @@ TEST_F(LexerTest, InvalidSymbol) {
 }
 
 TEST_F(LexerTest, NoWhitespace) {
-    source_code source("BEGINPARAM CONST,denEND**123a");
+    SourceCode source("BEGINPARAM CONST,denEND**123a");
     lexer lexer(source);
     std::vector<token> expected = {
         token(IDENTIFIER, {source.begin(), std::next(source.begin(), 10)}),

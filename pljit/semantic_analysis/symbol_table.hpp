@@ -2,8 +2,8 @@
 #ifndef PLJIT_SYMBOL_TABLE_HPP
 #define PLJIT_SYMBOL_TABLE_HPP
 
+#include "pljit/source_management/SourceCode.hpp"
 #include <string_view>
-#include "pljit/source_management/source_code.hpp"
 
 namespace pljit::semantic_analysis {
 
@@ -14,7 +14,7 @@ namespace pljit::semantic_analysis {
             VARIABLE
         };
 
-        source_management::source_code::SourceFragment declaration;
+        source_management::SourceFragment declaration;
         symbol_type type;
         std::size_t id;
         bool initialized;
@@ -42,7 +42,7 @@ namespace pljit::semantic_analysis {
 
         public:
         using symbol_handle = std::vector<symbol>::size_type;
-        symbol_handle insert(source_management::source_code::SourceFragment decl, symbol::symbol_type type, std::optional<int64_t> initial_value);
+        symbol_handle insert(source_management::SourceFragment decl, symbol::symbol_type type, std::optional<int64_t> initial_value);
         std::optional<symbol_handle> find(std::string_view name) const;
         symbol& get(symbol_handle handle);
         const symbol& get(symbol_handle handle) const;

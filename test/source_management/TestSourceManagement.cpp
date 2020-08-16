@@ -1,4 +1,4 @@
-#include "pljit/source_management/source_code.hpp"
+#include "pljit/source_management/SourceCode.hpp"
 #include <numeric>
 #include <gtest/gtest.h>
 
@@ -26,7 +26,7 @@ template<class Iter1, class Iter2>
 } // namespace
 
 TEST(SourceManagement, EmptyString) {
-    source_code code(std::string(""));
+    SourceCode code(std::string(""));
     ASSERT_EQ(code.number_of_lines(), 0);
 }
 
@@ -41,7 +41,7 @@ TEST(SourceManagement, Iteration) {
     };
 
     auto concatenated_code = std::accumulate(lines.begin(), lines.end(), std::string());
-    source_code code(concatenated_code);
+    SourceCode code(concatenated_code);
 
     // Test line detection/iteration
     ASSERT_EQ(code.number_of_lines(), lines.size());
@@ -74,7 +74,7 @@ TEST(SourceManagement, Iteration) {
 
 TEST(SourceManagement, SingleLineWithoutNewline) {
     std::string code_string("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-    source_code code(code_string);
+    SourceCode code(code_string);
     ASSERT_EQ(code.number_of_lines(), 1);
     ASSERT_EQ(code.line_length(0), code_string.size() + 1);
     ASSERT_TRUE(range_equals(code.begin(), std::prev(code.end()), code_string.begin(), code_string.end()));
@@ -82,7 +82,7 @@ TEST(SourceManagement, SingleLineWithoutNewline) {
 
 TEST(SourceManagement, EmptyLine) {
     std::string code_string("Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n\nTest\n");
-    source_code code(code_string);
+    SourceCode code(code_string);
     ASSERT_EQ(code.number_of_lines(), 3);
     ASSERT_EQ(code.line_length(1), 1);
     ASSERT_TRUE(range_equals(code.begin(), code.end(), code_string.begin(), code_string.end()));
@@ -94,14 +94,14 @@ TEST(SourceManagement, Encoding) {
 
 TEST(SourceManagement, EmptyFragment) {
     std::string code_string("Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nAB\nCDE\n");
-    source_code code(code_string);
+    SourceCode code(code_string);
     SourceFragment fragment(code.begin(), code.begin());
     ASSERT_EQ(fragment.str(), "");
 }
 
 TEST(SourceManagement, SingleLineFragment) {
     std::string code_string("Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nAB\nCDE\n");
-    source_code code(code_string);
+    SourceCode code(code_string);
     auto fragment_begin = code.begin(), fragment_end = std::next(fragment_begin, 5);
     SourceFragment fragment(fragment_begin, fragment_end);
     ASSERT_EQ(fragment.str(), code_string.substr(0, std::distance(fragment_begin, fragment_end)));
@@ -111,7 +111,7 @@ TEST(SourceManagement, MultiLineFragment) {
     // TODO Implement MultiLineFragment test
     return;
     std::string code_string("Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nAB\nCDE\n");
-    source_code code(code_string);
+    SourceCode code(code_string);
     auto fragment_begin = code.begin(), fragment_end = code.end();
     SourceFragment fragment(fragment_begin, fragment_end);
     ASSERT_EQ(fragment.str(), code_string.substr(0, std::distance(fragment_begin, fragment_end)));
@@ -119,7 +119,7 @@ TEST(SourceManagement, MultiLineFragment) {
 
 TEST(SourceManagement, PrettyPrinting) {
     std::string code_string("Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nAB\nCDE\n");
-    source_code code(code_string);
+    SourceCode code(code_string);
 
     {
         SourcePosition pos_line_1 = std::next(code.begin(), 10);

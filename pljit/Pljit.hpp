@@ -20,7 +20,7 @@ namespace pljit {
 
     class Function {
         std::mutex compilation_mutex;
-        source_management::source_code source_code;
+        source_management::SourceCode source_code;
         std::unique_ptr<semantic_analysis::FunctionNode> ast;
         bool compilation_failed = false;
 

@@ -9,37 +9,6 @@
 #include <type_traits>
 #include <utility>
 
-/**
-* Drawbacks of the current implementation:
-* constructors can be unsafe, i.e. when parsing via
-*      node(parse_1(), parse_2())
-* c++ does not guarantee ordering in this case
- *
- * TODO Switch to TokenIterator
-*/
-
-/**
- *
- * Value-based Tree
- * Advantages:
- *  Little overhead (memory allocation)
- *  Sequencing with {} operators
- *  Static type safety (? Is guaranteed by solver but if we ever wish to make the parser into it's own library)
- * Disadvantages:
- *  Fairly verbose
- *  Inflexible (?)
- *  We need a visitor accept impl for each node anyway
- *  Cannot work with subtrees unless CRTP is used
- *
- * Virtual Tree
- * Advantages:
- *  Simple implementation - we know that each node is correct
- * Drawbacks:
- *  No type safety unless we constrain our constructors, but the the
- *      main advantage (simple implementation) is somewhat mitigate. Also, not constraining our constructors is bad behaviour.
- *  We still need to implement a class for each non-terminal anyway...
- */
-
 namespace pljit::parser {
     class parser {
         using Token = lexer::token;

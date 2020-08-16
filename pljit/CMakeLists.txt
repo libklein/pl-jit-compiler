@@ -1,5 +1,5 @@
 set(PLJIT_SOURCES
-    source_management/source_code.cpp
+    source_management/SourceCode.cpp
     lexer/token.cpp
     lexer/lexer.cpp
     parser/parse_tree_nodes.cpp

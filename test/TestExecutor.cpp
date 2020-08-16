@@ -1,10 +1,10 @@
+#include "pljit/semantic_analysis/ASTCreator.hpp"
 #include <pljit/execution/ExecutionContext.hpp>
 #include <pljit/lexer/lexer.hpp>
 #include <pljit/parser/parser.hpp>
 #include <pljit/semantic_analysis/AST.hpp>
-#include "pljit/semantic_analysis/ASTCreator.hpp"
 #include <pljit/semantic_analysis/dot_print_visitor.hpp>
-#include <pljit/source_management/source_code.hpp>
+#include <pljit/source_management/SourceCode.hpp>
 #include <gtest/gtest.h>
 
 using namespace pljit;
@@ -16,7 +16,7 @@ class Execution : public ::testing::Test {
     protected:
     template<class... Args>
     std::optional<int64_t> execute(std::string_view source_string, Args&&... parameters) {
-        source_code code(source_string);
+        SourceCode code(source_string);
         pljit::lexer::lexer lexer (code);
         pljit::parser::parser parser(lexer);
         auto parse_tree = parser.parse_function_definition();

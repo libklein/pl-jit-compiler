@@ -5,7 +5,7 @@
 #ifndef PLJIT_TOKEN_HPP
 #define PLJIT_TOKEN_HPP
 
-#include "pljit/source_management/source_code.hpp"
+#include "pljit/source_management/SourceCode.hpp"
 
 /*
  * Possible tokens:
