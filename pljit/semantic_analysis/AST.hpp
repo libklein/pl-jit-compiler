@@ -44,7 +44,6 @@ class ASTNode {
         return type;
     };
 
-    virtual std::unique_ptr<ASTNode> optimize(std::unique_ptr<ASTNode>& self, optimization::optimization_pass& optimizer) { return nullptr; };
     virtual std::optional<int64_t> evaluate(execution::ExecutionContext& context) const = 0;
     virtual void accept(ast_visitor& visitor) = 0;
     virtual void accept(const_ast_visitor& visitor) const = 0;
@@ -53,71 +52,87 @@ class ASTNode {
 };
 
 class StatementNode : public ASTNode {
+    public:
+    virtual void optimize(std::unique_ptr<StatementNode>& self, optimization::optimization_pass& optimizer) = 0;
     protected:
     using ASTNode::ASTNode;
-};
-
-class FunctionNode : public ASTNode {
-    std::vector<std::unique_ptr<StatementNode>> statements;
-
-    public:
-    explicit FunctionNode(std::vector<std::unique_ptr<StatementNode>> statements) : ASTNode(ASTNode::Function)
-        , statements(std::move(statements)) {}
-
-    auto get_number_of_statements() const {
-        return statements.size();
-    }
-
-    StatementNode& get_statement(unsigned int id) {
-        assert(id < statements.size());
-        return *statements[id];
-    }
-
-    /*static std::unique_ptr<FunctionNode> analyzeFunction(const parser::function_defition_node& node) {
-        std::vector<std::unique_ptr<StatementNode>> statements;
-        for(const auto& next_statement : node.get_children()) {
-            assert(next_statement->get_type() == parser::STATEMENT);
-        }
-    }*/
-
-    void accept(ast_visitor& visitor) override;
-    std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
-    void accept(const_ast_visitor& visitor) const override;
 };
 
 class ExpressionNode : public ASTNode {
     protected:
     using ASTNode::ASTNode;
+
+    public:
+    virtual void optimize(std::unique_ptr<ExpressionNode>& self, optimization::optimization_pass& optimizer) = 0;
 };
 
-class ValueNode : public ExpressionNode {
-    protected:
-    using ExpressionNode::ExpressionNode;
+class FunctionNode : public ASTNode {
+    std::vector<std::unique_ptr<StatementNode>> statements;
+    symbol_table symbols;
+
+    public:
+    explicit FunctionNode(std::vector<std::unique_ptr<StatementNode>> statements, symbol_table symbols)
+        : ASTNode(ASTNode::Function)
+        , statements(std::move(statements))
+          , symbols(std::move(symbols)) {}
+
+    auto get_number_of_statements() const {
+        return statements.size();
+    }
+
+    std::unique_ptr<StatementNode>& get_statement(unsigned int id) {
+        assert(id < statements.size());
+        return statements[id];
+    }
+
+    const symbol_table& getSymbolTable() const {
+        return symbols;
+    }
+
+    symbol_table& getSymbolTable() {
+        return symbols;
+    }
+
+    void removeStatement(unsigned int id) {
+        statements.erase(statements.begin() + id);
+    }
+
+    std::unique_ptr<StatementNode> releaseStatement(unsigned int id) {
+        return std::move(statements[id]);
+    }
+    void accept(ast_visitor& visitor) override;
+    std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
+    void accept(const_ast_visitor& visitor) const override;
 };
 
-class IdentifierNode : public ValueNode {
+class IdentifierNode : public ExpressionNode {
     symbol_table::symbol_handle symbol;
     public:
-    explicit IdentifierNode(symbol_table::symbol_handle symbol_handle) : ValueNode(ASTNode::Identifier), symbol(symbol_handle) {};
+    explicit IdentifierNode(symbol_table::symbol_handle symbol_handle) : ExpressionNode(ASTNode::Identifier), symbol(symbol_handle) {};
 
     symbol_table::symbol_handle get_symbol_handle() const {
         return symbol;
     }
-    std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
 
+    public:
+    void optimize(std::unique_ptr<ExpressionNode>& self, optimization::optimization_pass& optimizer) override;
+    std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
     void accept(ast_visitor& visitor) override;
     void accept(const_ast_visitor& visitor) const override;
 };
 
-class LiteralNode : public ValueNode {
+class LiteralNode : public ExpressionNode {
     int64_t value;
     public:
-    explicit LiteralNode(int64_t value) : ValueNode(ASTNode::Literal), value(value) {};
+    explicit LiteralNode(int64_t value) : ExpressionNode(ASTNode::Literal), value(value) {};
 
     int64_t get_value() const {
         return value;
     }
     std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
+
+    public:
+    void optimize(std::unique_ptr<ExpressionNode>& self, optimization::optimization_pass& optimizer) override;
     void accept(ast_visitor& visitor) override;
     void accept(const_ast_visitor& visitor) const override;
 };
@@ -132,8 +147,14 @@ class ReturnStatementNode : public StatementNode {
     ExpressionNode& get_expression() {
         return *return_expression;
     }
+
+    std::unique_ptr<ExpressionNode>& releaseExpression() {
+        return return_expression;
+    }
+
     std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
     void accept(ast_visitor& visitor) override;
+    void optimize(std::unique_ptr<StatementNode>& self, optimization::optimization_pass& optimizer) override;
     void accept(const_ast_visitor& visitor) const override;
 };
 
@@ -152,8 +173,14 @@ class AssignmentNode : public StatementNode {
     ExpressionNode& get_expression() {
         return *value;
     }
+
+    std::unique_ptr<ExpressionNode>& releaseExpression() {
+        return value;
+    }
+
     std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
     void accept(ast_visitor& visitor) override;
+    void optimize(std::unique_ptr<StatementNode>& self, optimization::optimization_pass& optimizer) override;
     void accept(const_ast_visitor& visitor) const override;
 };
 
@@ -181,13 +208,14 @@ class UnaryOperatorASTNode : public ExpressionNode {
 
     ExpressionNode& getInput() { return *child; };
     const ExpressionNode& getInput() const { return *child; };
-    std::unique_ptr<ExpressionNode> releaseInput() { return std::move(child); };
+    std::unique_ptr<ExpressionNode>& releaseInput() { return child; };
 
     OperatorType get_operator() const {
         return operation;
     }
     std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
     void accept(ast_visitor& visitor) override;
+    void optimize(std::unique_ptr<ExpressionNode>& self, optimization::optimization_pass& optimizer) override;
     void accept(const_ast_visitor& visitor) const override;
 };
 
@@ -232,38 +260,12 @@ class BinaryOperatorASTNode : public ExpressionNode {
     const ExpressionNode& getLeft() const { return *left_child; };
     const ExpressionNode& getRight() const { return *right_child; };
 
-    std::unique_ptr<ExpressionNode> releaseLeft() { return std::move(left_child); };
-    std::unique_ptr<ExpressionNode> releaseRight() { return std::move(right_child); };
+    std::unique_ptr<ExpressionNode>& releaseLeft() { return left_child; };
+    std::unique_ptr<ExpressionNode>& releaseRight() { return right_child; };
     std::optional<int64_t> evaluate(execution::ExecutionContext& context) const override;
     void accept(ast_visitor& visitor) override;
+    void optimize(std::unique_ptr<ExpressionNode>& self, optimization::optimization_pass& optimizer) override;
     void accept(const_ast_visitor& visitor) const override;
-};
-//---------------------------------------------------------------------------
-class ASTCreator {
-    private:
-    symbol_table symbols;
-    using symbol_handle = symbol_table::size_type;
-    std::unordered_map<std::string_view, symbol_handle> identifier_mapping;
-
-    // Helpers for the symbol table
-    std::pair<symbol_handle, bool> register_symbol(const parser::identifier_node& node, symbol::symbol_type type
-        , std::optional<int64_t> value);
-
-    bool analyze_declarations(const parser::declarator_list_node& node, symbol::symbol_type symbolType);
-    bool analyze_declarations(const parser::init_declarator_list_node& node, symbol::symbol_type symbolType);
-
-    std::unique_ptr<IdentifierNode> analyze_identifier(const parser::identifier_node& node);
-    std::unique_ptr<LiteralNode> analyze_literal(const parser::literal_node& node);
-    std::unique_ptr<ReturnStatementNode> analyze_return_statement(const parser::statement_node& node);
-    std::unique_ptr<AssignmentNode> analyze_assignment_node(const parser::assignment_expression_node& node);
-
-    std::unique_ptr<UnaryOperatorASTNode> analyze_expression(const parser::unary_expression_node& node);
-    std::unique_ptr<ExpressionNode> analyze_expression(const parser::multiplicative_expression_node& node);
-    std::unique_ptr<ExpressionNode> analyze_expression(const parser::additive_expression_node& node);
-    std::unique_ptr<ExpressionNode> analyze_expression(const parser::primary_expression_node& node);
-    std::unique_ptr<FunctionNode> analyze_function(const parser::function_definition_node& parseTree);
-    public:
-    static std::pair<std::unique_ptr<FunctionNode>, symbol_table> CreateAST(const parser::function_definition_node& parseTree);
 };
 } // namespace pljit::semantic_analysis
 //---------------------------------------------------------------------------

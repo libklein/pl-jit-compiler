@@ -1,10 +1,11 @@
-#include <gtest/gtest.h>
+#include <pljit/execution/ExecutionContext.hpp>
 #include <pljit/lexer/lexer.hpp>
 #include <pljit/parser/parser.hpp>
 #include <pljit/semantic_analysis/AST.hpp>
+#include "pljit/semantic_analysis/ASTCreator.hpp"
 #include <pljit/semantic_analysis/dot_print_visitor.hpp>
 #include <pljit/source_management/source_code.hpp>
-#include <pljit/execution/ExecutionContext.hpp>
+#include <gtest/gtest.h>
 
 using namespace pljit;
 using namespace pljit::semantic_analysis;

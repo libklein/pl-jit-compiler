@@ -263,7 +263,7 @@ void semantic_analysis::ast_creation_visitor::visit(const parser::function_defin
         construction_failed = true;
     }
 
-    if(!construction_failed) root = std::make_unique<FunctionNode>(std::move(statements));
+    if(!construction_failed) root = std::make_unique<FunctionNode>(std::move(statements), std::move(symbols));
 }
 
 void semantic_analysis::ast_creation_visitor::visit(const parser::unary_expression_node& node) {

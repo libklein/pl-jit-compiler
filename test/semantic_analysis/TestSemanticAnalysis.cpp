@@ -1,6 +1,7 @@
 #include <pljit/lexer/lexer.hpp>
 #include <pljit/parser/parser.hpp>
 #include <pljit/semantic_analysis/AST.hpp>
+#include "pljit/semantic_analysis/ASTCreator.hpp"
 #include <pljit/semantic_analysis/dot_print_visitor.hpp>
 #include <pljit/source_management/source_code.hpp>
 #include <gtest/gtest.h>

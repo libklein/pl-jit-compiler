@@ -8,7 +8,7 @@ void dot_print_visitor::visit(FunctionNode& node) {
     auto id = write_labeled_node("Function");
     for(unsigned i = 0; i < node.get_number_of_statements(); ++i) {
         out << "n_" << id << " -- ";
-        node.get_statement(i).accept(*this);
+        node.get_statement(i)->accept(*this);
     }
     out << "}";
 }

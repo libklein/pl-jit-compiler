@@ -6,7 +6,8 @@ set(TEST_SOURCES
     parser/TestParser.cpp
     semantic_analysis/TestSemanticAnalysis.cpp
     TestExecutor.cpp
-    TestInterface.cpp)
+    TestInterface.cpp
+    TestOptimization.cpp)
 
 add_executable(tester ${TEST_SOURCES})
 target_link_libraries(tester PUBLIC

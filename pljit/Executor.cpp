@@ -5,7 +5,7 @@ namespace pljit {
 
 void Executor::visit(semantic_analysis::FunctionNode& node) {
     for(unsigned i = 0; i < node.get_number_of_statements(); ++i) {
-        node.get_statement(i).accept(*this);
+        node.get_statement(i)->accept(*this);
         if(execution_failed) return;
     }
 }
