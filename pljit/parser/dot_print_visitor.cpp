@@ -5,7 +5,7 @@ using namespace pljit::parser;
 
 unsigned dot_print_visitor::write_labeled_node(std::string_view label) {
     unsigned id = next_id++;
-    if(id > 0) {
+    if (id > 0) {
         out << "n_" << id << ";";
     }
     out << "n_" << id << " [label=\"" << label << "\"];\n";

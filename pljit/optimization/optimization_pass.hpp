@@ -17,6 +17,7 @@ class optimization_pass {
      */
     public:
     optimization_pass() = default;
+
     private:
     unsigned passes = 0;
     //std::unique_ptr<semantic_analysis::ASTNode> current_node;

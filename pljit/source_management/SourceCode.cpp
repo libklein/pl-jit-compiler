@@ -22,14 +22,14 @@ char SourcePosition::operator*() {
 SourcePosition& SourcePosition::operator++() {
     ++cursor;
     // TODO Perhaps check against \n?
-    if(cursor == source->line_length(line)) {
+    if (cursor == source->line_length(line)) {
         ++line;
         cursor = 0;
     }
     return *this;
 }
 SourcePosition& SourcePosition::operator--() {
-    if(cursor == 0) {
+    if (cursor == 0) {
         --line;
         cursor = source->line_length(line) - 1;
     } else {
@@ -86,7 +86,7 @@ std::string_view SourceFragment::str() const {
 }
 bool SourceFragment::operator==(const SourceFragment& rhs) const {
     return begin_pos == rhs.begin_pos &&
-           end_pos == rhs.end_pos;
+        end_pos == rhs.end_pos;
 }
 bool SourceFragment::operator!=(const SourceFragment& rhs) const {
     return !(rhs == *this);
@@ -95,10 +95,10 @@ std::ostream& operator<<(std::ostream& os, const SourceFragment& fragment) {
     return fragment.output_to_stream(os);
 }
 void SourceFragment::extend(const SourceFragment& other) {
-    if(other.end() > end()) {
+    if (other.end() > end()) {
         end_pos = other.end_pos;
     }
-    if(other.begin() < begin()) {
+    if (other.begin() < begin()) {
         begin_pos = other.begin_pos;
     }
 }
@@ -107,12 +107,12 @@ SourcePosition::offset_t SourceCode::line_length(SourcePosition::offset_t line) 
 }
 SourcePosition::offset_t SourceCode::get_line_offset(SourceCode::offset_t line) const {
     assert(line <= lines.size());
-    if(line == 0) {
+    if (line == 0) {
         return 0;
     } else if (line == number_of_lines()) { // Will not be reached if code is empty
         return lines.back();
     } else {
-        return lines[line-1];
+        return lines[line - 1];
     }
 }
 char SourceCode::get(SourceCode::offset_t line, SourceCode::offset_t cursor) const {
@@ -141,9 +141,9 @@ SourcePosition SourceCode::begin() const {
 SourceCode::SourceCode(const char* code) : SourceCode(std::string(code)) {}
 SourceCode::SourceCode(std::string_view code) : SourceCode(std::string(code)) {}
 SourceCode::SourceCode(std::string source_code) : code(std::move(source_code)) {
-    if(code.empty()) return;
+    if (code.empty()) return;
 
-    if(code.back() != '\n') {
+    if (code.back() != '\n') {
         code.push_back('\n');
     }
     auto prev_line_begin = code.begin();
@@ -153,6 +153,6 @@ SourceCode::SourceCode(std::string source_code) : code(std::move(source_code)) {
         cur_line_end = std::find(prev_line_begin, code.end(), '\n');
         lines.emplace_back(++cur_line_end - code.begin());
         prev_line_begin = cur_line_end;
-    } while(cur_line_end != code.end());
+    } while (cur_line_end != code.end());
 }
 } // namespace pljit::source_management

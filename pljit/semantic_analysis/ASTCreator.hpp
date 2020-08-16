@@ -2,9 +2,9 @@
 #ifndef PLJIT_ASTCREATOR_HPP
 #define PLJIT_ASTCREATOR_HPP
 
-#include "pljit/semantic_analysis/symbol_table.hpp"
 #include "pljit/parser/parser_fwd.hpp"
 #include "pljit/semantic_analysis/ast_fwd.hpp"
+#include "pljit/semantic_analysis/symbol_table.hpp"
 
 //---------------------------------------------------------------------------
 namespace pljit::semantic_analysis {

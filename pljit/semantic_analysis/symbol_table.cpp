@@ -26,7 +26,7 @@ symbol_table::size_type symbol_table::size() const {
 }
 
 auto symbol_table::find(std::string_view name) const -> std::optional<symbol_handle> {
-    if(auto symbol_iter = std::find_if(symbols.begin(), symbols.end(), [name](const symbol& s) { return s.get_name() == name; });
+    if (auto symbol_iter = std::find_if(symbols.begin(), symbols.end(), [name](const symbol& s) { return s.get_name() == name; });
         symbol_iter != symbols.end()) {
         return symbol_iter->id;
     }

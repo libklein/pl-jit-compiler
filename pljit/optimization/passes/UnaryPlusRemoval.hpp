@@ -6,15 +6,15 @@
 
 namespace pljit::optimization::passes {
 
-    class UnaryPlusRemoval : public pljit::optimization::optimization_pass {
-        void optimize(semantic_analysis::FunctionNode& node) override;
+class UnaryPlusRemoval : public pljit::optimization::optimization_pass {
+    void optimize(semantic_analysis::FunctionNode& node) override;
 
-        public:
-        std::unique_ptr<pljit::semantic_analysis::ExpressionNode> optimize(std::unique_ptr<pljit::semantic_analysis::UnaryOperatorASTNode> node) override;
-        std::unique_ptr<pljit::semantic_analysis::ExpressionNode> optimize(std::unique_ptr<pljit::semantic_analysis::BinaryOperatorASTNode> node) override;
-        std::unique_ptr<pljit::semantic_analysis::StatementNode> optimize(std::unique_ptr<pljit::semantic_analysis::ReturnStatementNode> node) override;
-        std::unique_ptr<pljit::semantic_analysis::StatementNode> optimize(std::unique_ptr<pljit::semantic_analysis::AssignmentNode> node) override;
-    };
+    public:
+    std::unique_ptr<pljit::semantic_analysis::ExpressionNode> optimize(std::unique_ptr<pljit::semantic_analysis::UnaryOperatorASTNode> node) override;
+    std::unique_ptr<pljit::semantic_analysis::ExpressionNode> optimize(std::unique_ptr<pljit::semantic_analysis::BinaryOperatorASTNode> node) override;
+    std::unique_ptr<pljit::semantic_analysis::StatementNode> optimize(std::unique_ptr<pljit::semantic_analysis::ReturnStatementNode> node) override;
+    std::unique_ptr<pljit::semantic_analysis::StatementNode> optimize(std::unique_ptr<pljit::semantic_analysis::AssignmentNode> node) override;
+};
 
 } // namespace pljit::optimization::passes
 

@@ -14,7 +14,7 @@ class node_base {
     protected:
     grammar_type type;
     source_management::SourceFragment codeReference;
-    explicit node_base(grammar_type type, source_management::SourceFragment source) : type(type), codeReference(source) {};
+    explicit node_base(grammar_type type, source_management::SourceFragment source) : type(type), codeReference(source){};
 
     public:
     grammar_type get_type() const {
@@ -182,7 +182,8 @@ struct init_declarator_list_node : public non_terminal_node {
 
     // TODO Remove type-safe constructors (sigh)
     init_declarator_list_node(source_management::SourceFragment fragment,
-                              std::unique_ptr<init_declarator_node> identifier,
+                              std::unique_ptr<init_declarator_node>
+                                  identifier,
                               std::vector<std::pair<
                                   std::unique_ptr<terminal_node>,
                                   std::unique_ptr<init_declarator_node>>>
@@ -209,7 +210,8 @@ struct parameter_declaration_node : public non_terminal_node {
 
     // TODO Superclass
     parameter_declaration_node(source_management::SourceFragment fragment,
-        std::unique_ptr<terminal_node> paramKeyword,
+                               std::unique_ptr<terminal_node>
+                                   paramKeyword,
                                std::unique_ptr<declarator_list_node>
                                    declarators,
                                std::unique_ptr<terminal_node>
@@ -227,7 +229,8 @@ struct variable_declaration_node : public non_terminal_node {
     static constexpr std::string_view NAME = "variable-declaration";
 
     variable_declaration_node(source_management::SourceFragment fragment,
-        std::unique_ptr<terminal_node> variable_keyword,
+                              std::unique_ptr<terminal_node>
+                                  variable_keyword,
                               std::unique_ptr<declarator_list_node>
                                   declarators,
                               std::unique_ptr<terminal_node>
@@ -245,7 +248,8 @@ struct constant_declaration_node : public non_terminal_node {
     static constexpr std::string_view NAME = "constant-declaration";
 
     constant_declaration_node(source_management::SourceFragment fragment,
-        std::unique_ptr<terminal_node> const_keyword,
+                              std::unique_ptr<terminal_node>
+                                  const_keyword,
                               std::unique_ptr<init_declarator_list_node>
                                   declarators,
                               std::unique_ptr<terminal_node>
@@ -262,13 +266,15 @@ struct constant_declaration_node : public non_terminal_node {
 struct additive_expression_node : public non_terminal_node {
     static constexpr std::string_view NAME = "additive-expression";
     enum class OperationType {
-        PLUS, MINUS
+        PLUS,
+        MINUS
     };
 
     OperationType op;
     bool has_subexpression = false;
     additive_expression_node(source_management::SourceFragment fragment,
-        std::unique_ptr<multiplicative_expression_node> multiplicative_expression,
+                             std::unique_ptr<multiplicative_expression_node>
+                                 multiplicative_expression,
                              std::unique_ptr<terminal_node>
                                  binary_operator,
                              std::unique_ptr<additive_expression_node>
@@ -312,17 +318,20 @@ struct primary_expression_node : public non_terminal_node {
     primary_expression_type statement_type;
 
     explicit primary_expression_node(source_management::SourceFragment fragment,
-        std::unique_ptr<identifier_node> identifier)
+                                     std::unique_ptr<identifier_node>
+                                         identifier)
         : non_terminal_node(PRIMARY_EXPRESSION, fragment, std::move(identifier)),
           statement_type(primary_expression_type::IDENTIFIER) {}
 
     explicit primary_expression_node(source_management::SourceFragment fragment,
-        std::unique_ptr<literal_node> literal)
+                                     std::unique_ptr<literal_node>
+                                         literal)
         : non_terminal_node(PRIMARY_EXPRESSION, fragment, std::move(literal)),
           statement_type(primary_expression_type::LITERAL) {}
 
     explicit primary_expression_node(source_management::SourceFragment fragment,
-        std::unique_ptr<terminal_node> l_bracket,
+                                     std::unique_ptr<terminal_node>
+                                         l_bracket,
                                      std::unique_ptr<additive_expression_node>
                                          additive_expression,
                                      std::unique_ptr<terminal_node>
@@ -351,7 +360,8 @@ struct primary_expression_node : public non_terminal_node {
 struct unary_expression_node : public non_terminal_node {
     static constexpr std::string_view NAME = "unary-expression";
     enum class OperationType {
-        PLUS, MINUS
+        PLUS,
+        MINUS
     };
 
     OperationType op = OperationType::PLUS;
@@ -360,7 +370,7 @@ struct unary_expression_node : public non_terminal_node {
         : non_terminal_node(UNARY_EXPRESSION, fragment) {
         has_unary_operator = this->add_child(std::move(unary_operator));
         this->add_child(std::move(primary_expression));
-        if(has_unary_operator && get_unary_operator()->get_token().Type() == lexer::MINUS_OP) {
+        if (has_unary_operator && get_unary_operator()->get_token().Type() == lexer::MINUS_OP) {
             op = OperationType::MINUS;
         }
     }
@@ -383,7 +393,8 @@ struct unary_expression_node : public non_terminal_node {
 struct multiplicative_expression_node : public non_terminal_node {
     static constexpr std::string_view NAME = "multiplicative-expression";
     enum class OperationType {
-        MULTIPLY, DIVIDE
+        MULTIPLY,
+        DIVIDE
     };
 
     OperationType op;
@@ -391,7 +402,8 @@ struct multiplicative_expression_node : public non_terminal_node {
     // TODO Expression base class
     bool has_subexpression = false;
     multiplicative_expression_node(source_management::SourceFragment fragment,
-        std::unique_ptr<unary_expression_node> unary_expression,
+                                   std::unique_ptr<unary_expression_node>
+                                       unary_expression,
                                    std::unique_ptr<terminal_node>
                                        binary_operator,
                                    std::unique_ptr<multiplicative_expression_node>
@@ -427,10 +439,7 @@ struct assignment_expression_node : public non_terminal_node {
     static constexpr std::string_view NAME = "assignment-expression";
 
     assignment_expression_node(source_management::SourceFragment fragment, std::unique_ptr<identifier_node> identifier, std::unique_ptr<terminal_node> assignment_operator, std::unique_ptr<additive_expression_node> additive_expression)
-        : non_terminal_node(ASSIGNMENT_EXPRESSION, fragment
-                            , std::move(identifier)
-                                , std::move(assignment_operator)
-                                , std::move(additive_expression)) {}
+        : non_terminal_node(ASSIGNMENT_EXPRESSION, fragment, std::move(identifier), std::move(assignment_operator), std::move(additive_expression)) {}
 
     void accept(parse_tree_visitor& visitor) const override;
 
@@ -454,7 +463,7 @@ struct statement_node : public non_terminal_node {
 
     statement_type statement_type;
     explicit statement_node(source_management::SourceFragment fragment, std::unique_ptr<assignment_expression_node> assignment) : non_terminal_node(STATEMENT, fragment, std::move(assignment)), statement_type(statement_type::ASSIGNMENT_STATEMENT) {}
-    statement_node(source_management::SourceFragment fragment,std::unique_ptr<terminal_node> return_keyword, std::unique_ptr<additive_expression_node> additive_expression) : non_terminal_node(STATEMENT, fragment, std::move(return_keyword), std::move(additive_expression)), statement_type(statement_type::RETURN_STATEMENT) {}
+    statement_node(source_management::SourceFragment fragment, std::unique_ptr<terminal_node> return_keyword, std::unique_ptr<additive_expression_node> additive_expression) : non_terminal_node(STATEMENT, fragment, std::move(return_keyword), std::move(additive_expression)), statement_type(statement_type::RETURN_STATEMENT) {}
 
     const assignment_expression_node* get_assignment() const {
         assert(statement_type == statement_type::ASSIGNMENT_STATEMENT);
@@ -497,7 +506,8 @@ struct compound_statement_node : public non_terminal_node {
     static constexpr std::string_view NAME = "compound-statement";
 
     compound_statement_node(source_management::SourceFragment fragment,
-        std::unique_ptr<terminal_node> begin_keyword,
+                            std::unique_ptr<terminal_node>
+                                begin_keyword,
                             std::unique_ptr<statement_list_node>
                                 statements,
                             std::unique_ptr<terminal_node>
@@ -517,7 +527,7 @@ struct function_definition_node : public non_terminal_node {
     bool has_parameter_declaration = false;
     bool has_variable_declaration = false;
     bool has_constant_declaration = false;
-    function_definition_node(source_management::SourceFragment fragment,std::unique_ptr<parameter_declaration_node> parameterDeclarations, std::unique_ptr<variable_declaration_node> variableDeclaration, std::unique_ptr<constant_declaration_node> constantDeclarations, std::unique_ptr<compound_statement_node> compundStatement, std::unique_ptr<terminal_node> programTerminator)
+    function_definition_node(source_management::SourceFragment fragment, std::unique_ptr<parameter_declaration_node> parameterDeclarations, std::unique_ptr<variable_declaration_node> variableDeclaration, std::unique_ptr<constant_declaration_node> constantDeclarations, std::unique_ptr<compound_statement_node> compundStatement, std::unique_ptr<terminal_node> programTerminator)
         : non_terminal_node(FUNCTION_DEFINITION, fragment, std::move(compundStatement), std::move(programTerminator)) {
         if (constantDeclarations) {
             has_constant_declaration = true;

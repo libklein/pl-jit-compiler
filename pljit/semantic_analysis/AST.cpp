@@ -16,8 +16,8 @@ void FunctionNode::accept(const_ast_visitor& visitor) const {
     visitor.visit(*this);
 }
 std::optional<int64_t> FunctionNode::evaluate(ExecutionContext& context) const {
-    for(const auto& statement : statements) {
-        if(auto result = statement->evaluate(context);!result) {
+    for (const auto& statement : statements) {
+        if (auto result = statement->evaluate(context); !result) {
             return {};
         } else if (statement->getType() == ReturnStatement) {
             context.set_result(result);
@@ -41,9 +41,9 @@ void BinaryOperatorASTNode::accept(const_ast_visitor& visitor) const {
 }
 std::optional<int64_t> BinaryOperatorASTNode::evaluate(ExecutionContext& context) const {
     auto lhs_result = getLeft().evaluate(context);
-    if(!lhs_result) return {};
+    if (!lhs_result) return {};
     auto rhs_result = getRight().evaluate(context);
-    if(!rhs_result) return {};
+    if (!rhs_result) return {};
     switch (get_operator()) {
         case semantic_analysis::BinaryOperatorASTNode::OperatorType::PLUS: {
             return *lhs_result + *rhs_result;
@@ -55,9 +55,10 @@ std::optional<int64_t> BinaryOperatorASTNode::evaluate(ExecutionContext& context
             return *lhs_result * *rhs_result;
         }
         case semantic_analysis::BinaryOperatorASTNode::OperatorType::DIVIDE: {
-            if(rhs_result == 0) {
+            if (rhs_result == 0) {
                 // TODO Error... We need to know where each AST node begins/ends
-                std::cerr << "Error: Division by zero at " << "TODO" << std::endl;
+                std::cerr << "Error: Division by zero at "
+                          << "TODO" << std::endl;
                 return {};
             }
             return *lhs_result / *rhs_result;
@@ -67,7 +68,7 @@ std::optional<int64_t> BinaryOperatorASTNode::evaluate(ExecutionContext& context
     return {};
 }
 void BinaryOperatorASTNode::optimize(std::unique_ptr<ExpressionNode>& self, optimization::optimization_pass& optimizer) {
-    if(self.get() == this) {
+    if (self.get() == this) {
         // Temporarily assume ownership - safe as this == self.get, so the type is correct
         std::unique_ptr<BinaryOperatorASTNode> typed_self(static_cast<BinaryOperatorASTNode*>(self.release()));
         self = optimizer.optimize(std::move(typed_self));
@@ -82,7 +83,7 @@ void UnaryOperatorASTNode::accept(const_ast_visitor& visitor) const {
 }
 std::optional<int64_t> UnaryOperatorASTNode::evaluate(ExecutionContext& context) const {
     auto result = getInput().evaluate(context);
-    if(!result) return {};
+    if (!result) return {};
     switch (get_operator()) {
         case semantic_analysis::UnaryOperatorASTNode::OperatorType::PLUS: {
             return result;
@@ -95,7 +96,7 @@ std::optional<int64_t> UnaryOperatorASTNode::evaluate(ExecutionContext& context)
     return {};
 }
 void UnaryOperatorASTNode::optimize(std::unique_ptr<ExpressionNode>& self, optimization::optimization_pass& optimizer) {
-    if(self.get() == this) {
+    if (self.get() == this) {
         // Temporarily assume ownership - safe as this == self.get, so the type is correct
         std::unique_ptr<UnaryOperatorASTNode> typed_self(static_cast<UnaryOperatorASTNode*>(self.release()));
         self = optimizer.optimize(std::move(typed_self));
@@ -110,13 +111,13 @@ void AssignmentNode::accept(const_ast_visitor& visitor) const {
 }
 std::optional<int64_t> AssignmentNode::evaluate(ExecutionContext& context) const {
     auto expression_result = value->evaluate(context);
-    if(!expression_result) return {};
+    if (!expression_result) return {};
 
     context.set_value(target->get_symbol_handle(), *expression_result);
     return expression_result;
 }
 void AssignmentNode::optimize(std::unique_ptr<StatementNode>& self, optimization::optimization_pass& optimizer) {
-    if(self.get() == this) {
+    if (self.get() == this) {
         // Temporarily assume ownership - safe as this == self.get, so the type is correct
         std::unique_ptr<AssignmentNode> typed_self(static_cast<AssignmentNode*>(self.release()));
         self = optimizer.optimize(std::move(typed_self));
@@ -135,7 +136,7 @@ std::optional<int64_t> ReturnStatementNode::evaluate(ExecutionContext& context) 
     return return_expression->evaluate(context);
 }
 void ReturnStatementNode::optimize(std::unique_ptr<StatementNode>& self, optimization::optimization_pass& optimizer) {
-    if(self.get() == this) {
+    if (self.get() == this) {
         // Temporarily assume ownership - safe as this == self.get, so the type is correct
         std::unique_ptr<ReturnStatementNode> typed_self(static_cast<ReturnStatementNode*>(self.release()));
         self = optimizer.optimize(std::move(typed_self));
@@ -152,7 +153,7 @@ std::optional<int64_t> LiteralNode::evaluate(ExecutionContext&) const {
     return get_value();
 }
 void LiteralNode::optimize(std::unique_ptr<ExpressionNode>& self, optimization::optimization_pass& optimizer) {
-    if(self.get() == this) {
+    if (self.get() == this) {
         // Temporarily assume ownership - safe as this == self.get, so the type is correct
         std::unique_ptr<LiteralNode> typed_self(static_cast<LiteralNode*>(self.release()));
         self = optimizer.optimize(std::move(typed_self));
@@ -169,7 +170,7 @@ std::optional<int64_t> IdentifierNode::evaluate(ExecutionContext& context) const
     return context.get_value(get_symbol_handle());
 }
 void IdentifierNode::optimize(std::unique_ptr<ExpressionNode>& self, optimization::optimization_pass& optimizer) {
-    if(self.get() == this) {
+    if (self.get() == this) {
         // Temporarily assume ownership - safe as this == self.get, so the type is correct
         std::unique_ptr<IdentifierNode> typed_self(static_cast<IdentifierNode*>(self.release()));
         self = optimizer.optimize(std::move(typed_self));

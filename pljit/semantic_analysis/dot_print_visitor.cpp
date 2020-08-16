@@ -6,7 +6,7 @@ using namespace pljit::semantic_analysis;
 void dot_print_visitor::visit(FunctionNode& node) {
     out << "graph {\n";
     auto id = write_labeled_node("Function");
-    for(unsigned i = 0; i < node.get_number_of_statements(); ++i) {
+    for (unsigned i = 0; i < node.get_number_of_statements(); ++i) {
         out << "n_" << id << " -- ";
         node.get_statement(i)->accept(*this);
     }
@@ -34,7 +34,7 @@ void dot_print_visitor::visit(AssignmentNode& node) {
 
 void dot_print_visitor::visit(UnaryOperatorASTNode& node) {
     unsigned id;
-    if(node.get_operator() == UnaryOperatorASTNode::OperatorType::PLUS) {
+    if (node.get_operator() == UnaryOperatorASTNode::OperatorType::PLUS) {
         id = write_labeled_node("+(child)");
     } else {
         id = write_labeled_node("-(child)");
@@ -70,7 +70,7 @@ void dot_print_visitor::visit(BinaryOperatorASTNode& node) {
 
 unsigned dot_print_visitor::write_labeled_node(std::string_view label) {
     unsigned id = next_id++;
-    if(id > 0) {
+    if (id > 0) {
         out << "n_" << id << ";";
     }
     out << "n_" << id << " [label=\"" << label << "\"];\n";

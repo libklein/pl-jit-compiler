@@ -11,12 +11,12 @@ class dead_code_elimination : public optimization_pass {
      * Walk over tree (in-order) until return statement is found
      * They, for each statement - remove it
      */
-     bool past_return = false;
+    bool past_return = false;
 
-     public:
-     dead_code_elimination() = default;
+    public:
+    dead_code_elimination() = default;
 
-     void optimize(semantic_analysis::FunctionNode& node) override;
+    void optimize(semantic_analysis::FunctionNode& node) override;
 };
 
 } // namespace pljit::optimization::passes

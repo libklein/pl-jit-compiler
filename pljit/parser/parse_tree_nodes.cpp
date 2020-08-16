@@ -60,4 +60,4 @@ void declarator_list_node::accept(parse_tree_visitor& visitor) const {
     visitor.visit(*this);
 }
 
-}
+} // namespace pljit::parser

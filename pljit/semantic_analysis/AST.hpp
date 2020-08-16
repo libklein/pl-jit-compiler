@@ -9,10 +9,10 @@
 #include <vector>
 
 namespace pljit::execution {
-    class ExecutionContext; // Forward declare execution context
+class ExecutionContext; // Forward declare execution context
 } // namespace pljit::execution
 namespace pljit::optimization {
-    class optimization_pass;
+class optimization_pass;
 }
 namespace pljit::semantic_analysis {
 class ast_visitor; // Forward declare visitor
@@ -37,7 +37,7 @@ class ASTNode {
     Type type;
 
     protected:
-    explicit ASTNode(Type type) : type(type) {};
+    explicit ASTNode(Type type) : type(type){};
 
     public:
     Type getType() const {
@@ -54,6 +54,7 @@ class ASTNode {
 class StatementNode : public ASTNode {
     public:
     virtual void optimize(std::unique_ptr<StatementNode>& self, optimization::optimization_pass& optimizer) = 0;
+
     protected:
     using ASTNode::ASTNode;
 };
@@ -72,9 +73,7 @@ class FunctionNode : public ASTNode {
 
     public:
     explicit FunctionNode(std::vector<std::unique_ptr<StatementNode>> statements, symbol_table symbols)
-        : ASTNode(ASTNode::Function)
-        , statements(std::move(statements))
-          , symbols(std::move(symbols)) {}
+        : ASTNode(ASTNode::Function), statements(std::move(statements)), symbols(std::move(symbols)) {}
 
     auto get_number_of_statements() const {
         return statements.size();
@@ -107,8 +106,9 @@ class FunctionNode : public ASTNode {
 
 class IdentifierNode : public ExpressionNode {
     symbol_table::symbol_handle symbol;
+
     public:
-    explicit IdentifierNode(symbol_table::symbol_handle symbol_handle) : ExpressionNode(ASTNode::Identifier), symbol(symbol_handle) {};
+    explicit IdentifierNode(symbol_table::symbol_handle symbol_handle) : ExpressionNode(ASTNode::Identifier), symbol(symbol_handle){};
 
     symbol_table::symbol_handle get_symbol_handle() const {
         return symbol;
@@ -123,8 +123,9 @@ class IdentifierNode : public ExpressionNode {
 
 class LiteralNode : public ExpressionNode {
     int64_t value;
+
     public:
-    explicit LiteralNode(int64_t value) : ExpressionNode(ASTNode::Literal), value(value) {};
+    explicit LiteralNode(int64_t value) : ExpressionNode(ASTNode::Literal), value(value){};
 
     int64_t get_value() const {
         return value;
@@ -202,9 +203,7 @@ class UnaryOperatorASTNode : public ExpressionNode {
 
     public:
     explicit UnaryOperatorASTNode(std::unique_ptr<ExpressionNode> child, OperatorType operator_type)
-        : ExpressionNode(ASTNode::UnaryOperation)
-          , child(std::move(child))
-          , operation(operator_type) {};
+        : ExpressionNode(ASTNode::UnaryOperation), child(std::move(child)), operation(operator_type){};
 
     ExpressionNode& getInput() { return *child; };
     const ExpressionNode& getInput() const { return *child; };
@@ -242,14 +241,15 @@ class BinaryOperatorASTNode : public ExpressionNode {
     public:
     BinaryOperatorASTNode(std::unique_ptr<ExpressionNode> leftChild,
                           OperatorType operation,
-                          std::unique_ptr<ExpressionNode> rightChild)
+                          std::unique_ptr<ExpressionNode>
+                              rightChild)
         : ExpressionNode(ASTNode::BinaryOperation),
           left_child(std::move(leftChild)),
           operation(operation),
           right_child(std::move(rightChild)) {
-              assert(this->left_child);
-              assert(this->right_child);
-          };
+        assert(this->left_child);
+        assert(this->right_child);
+    };
 
     OperatorType get_operator() const {
         return operation;

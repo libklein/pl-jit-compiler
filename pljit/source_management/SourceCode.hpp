@@ -76,7 +76,7 @@ class SourceFragment {
     SourcePosition end_pos;
 
     std::ostream& output_to_stream(std::ostream& os) const {
-        if(begin_pos == end_pos) return os;
+        if (begin_pos == end_pos) return os;
         // TODO Does not work for multi line segments. But is that even required?
         os << begin_pos;
         std::fill_n(std::ostream_iterator<std::ostream::char_type>(os), std::max(static_cast<int>(end_pos.cursor - begin_pos.cursor) - 1, 0), '~');
@@ -89,7 +89,7 @@ class SourceFragment {
     explicit SourceFragment(SourcePosition begin);
     SourceFragment(SourcePosition begin, SourcePosition end);
 
-    void extend(const SourceFragment &other);
+    void extend(const SourceFragment& other);
 
     auto begin() const;
 
@@ -112,6 +112,7 @@ class SourceFragment {
 class SourceCode {
     friend SourcePosition;
     friend SourceFragment;
+
     public:
     using offset_t = SourcePosition::offset_t;
 
@@ -144,7 +145,6 @@ class SourceCode {
 
     /// Returns the line
     std::string_view get(offset_t line) const;
-
 };
 
 /*using SourcePosition = source_code::SourcePosition;

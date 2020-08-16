@@ -18,7 +18,6 @@ class ast_visitor {
     virtual ~ast_visitor() = default;
 };
 
-
 class const_ast_visitor {
     public:
     virtual void visit(const FunctionNode&) = 0;

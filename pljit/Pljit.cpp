@@ -1,9 +1,9 @@
 
 #include "Pljit.hpp"
 #include "pljit/execution/ExecutionContext.hpp"
-#include "pljit/semantic_analysis/AST.hpp"
 #include "pljit/lexer/lexer.hpp"
 #include "pljit/parser/parser.hpp"
+#include "pljit/semantic_analysis/AST.hpp"
 #include "pljit/semantic_analysis/ASTCreator.hpp"
 
 using namespace pljit;
@@ -16,32 +16,31 @@ execution::ExecutionContext Function::call_impl(std::initializer_list<int64_t> p
 
 void Function::compile() {
     std::unique_lock compile_lock{compilation_mutex};
-    if(ast) return;
+    if (ast) return;
 #ifndef NDEBUG
     compilation_passed++;
 #endif
-    pljit::lexer::lexer lexer (source_code);
+    pljit::lexer::lexer lexer(source_code);
     pljit::parser::parser parser(lexer);
     auto parse_tree = parser.parse_function_definition();
 
-    if(!parse_tree) {
+    if (!parse_tree) {
         compilation_failed = true;
         return;
     }
 
     ast = pljit::semantic_analysis::ASTCreator::CreateAST(*parse_tree);
 
-    if(!ast) compilation_failed = true;
+    if (!ast) compilation_failed = true;
 
 #ifndef NDEBUG
-    if(compilation_passed > 1) {
+    if (compilation_passed > 1) {
         throw std::runtime_error("Function was compiled several times");
     };
 #endif
 }
 
 Function::Function(std::string source) : source_code(std::move(source)) {
-
 }
 
 Function::~Function() = default;
