@@ -38,8 +38,8 @@ const compound_statement_node* function_definition_node::get_compund_statement()
 }
 const constant_declaration_node* function_definition_node::get_constant_declarations() const {
     return has_constant_declaration ?
-           get_child<constant_declaration_node>(has_variable_declaration + has_parameter_declaration) :
-           nullptr;
+        get_child<constant_declaration_node>(has_variable_declaration + has_parameter_declaration) :
+        nullptr;
 }
 const variable_declaration_node* function_definition_node::get_variable_declarations() const {
     return has_variable_declaration ? get_child<variable_declaration_node>(has_parameter_declaration) : nullptr;
@@ -273,7 +273,7 @@ const identifier_node* declarator_list_node::get_declaration(unsigned long index
     return get_child<identifier_node>(index * 2);
 }
 
-node_base::node_base(grammar_type type, source_management::SourceFragment source) : type(type), codeReference(source){}
+node_base::node_base(grammar_type type, source_management::SourceFragment source) : type(type), codeReference(source) {}
 grammar_type node_base::get_type() const {
     return type;
 }

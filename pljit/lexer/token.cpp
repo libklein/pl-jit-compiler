@@ -6,7 +6,7 @@
 
 namespace pljit::lexer {
 
-token::token(TokenType type, token::SourceFragment source) : type(type), source(source){}
+token::token(TokenType type, token::SourceFragment source) : type(type), source(source) {}
 
 TokenType token::Type() const {
     return type;

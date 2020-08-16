@@ -2,8 +2,8 @@
 #ifndef PLJIT_SYMBOL_TABLE_HPP
 #define PLJIT_SYMBOL_TABLE_HPP
 
-#include <string_view>
 #include "pljit/source_management/SourceCode.hpp"
+#include <string_view>
 
 namespace pljit::semantic_analysis {
 

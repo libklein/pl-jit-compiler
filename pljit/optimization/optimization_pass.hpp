@@ -17,6 +17,7 @@ class optimization_pass {
      */
     public:
     optimization_pass() = default;
+
     protected:
     // By default, these just transfer ownership back
     /***

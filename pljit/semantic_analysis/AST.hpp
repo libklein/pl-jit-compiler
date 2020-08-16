@@ -220,7 +220,8 @@ class BinaryOperatorASTNode : public ExpressionNode {
     BinaryOperatorASTNode(std::unique_ptr<ExpressionNode> leftChild,
                           OperatorType operation,
                           std::unique_ptr<ExpressionNode>
-                              rightChild);;
+                              rightChild);
+    ;
 
     OperatorType get_operator() const {
         return operation;
