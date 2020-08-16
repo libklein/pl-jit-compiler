@@ -60,4 +60,5 @@ void declarator_list_node::accept(parse_tree_visitor& visitor) const {
     visitor.visit(*this);
 }
 
+node_base::node_base(grammar_type type, source_management::SourceFragment source) : type(type), codeReference(source){}
 } // namespace pljit::parser

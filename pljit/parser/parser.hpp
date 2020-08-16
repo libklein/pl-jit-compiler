@@ -41,7 +41,7 @@ class parser {
 
     template <class node_parser>
     std::optional<std::vector<std::pair<std::unique_ptr<terminal_node>, std::result_of_t<node_parser()>>>>
-    parse_list_of(TokenType separator_token_type, node_parser child_parser) {
+    parse_list_of(TokenType separator_token_type, node_parser&& child_parser) {
         std::vector<std::pair<std::unique_ptr<terminal_node>, std::result_of_t<node_parser()>>> list;
         while (expect_token(separator_token_type)) {
             // Cannot fail

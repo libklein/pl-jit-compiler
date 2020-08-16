@@ -19,10 +19,9 @@ class lexer {
     /***
      * Read predicate
      * @return Range in the input
-     * TODO Take lambda by reference?
      */
     template <class F>
-    source_management::SourceFragment read_until(F predicate) {
+    source_management::SourceFragment read_until(F&& predicate) {
         source_management::SourcePosition start = input_iter;
         for (; is_valid_symbol(*input_iter) && predicate(*input_iter); ++input_iter) {};
         return {start, input_iter};
@@ -30,9 +29,7 @@ class lexer {
 
     std::optional<token> parse_singleton();
 
-    static bool is_valid_symbol(char c) {
-        return std::isalnum(c) || c == '.' || c == ';' || c == ',' || c == '=' || c == ':' || c == '+' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')';
-    }
+    static bool is_valid_symbol(char c);
 
     static std::optional<token> parse_keyword(source_management::SourceFragment fragment);
 

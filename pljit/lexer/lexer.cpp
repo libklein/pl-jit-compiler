@@ -137,5 +137,8 @@ auto lexer::parse_keyword(source_management::SourceFragment fragment) -> std::op
 pljit::source_management::SourcePosition lexer::get_current_position() const {
     return input_iter;
 }
+bool lexer::is_valid_symbol(char c) {
+    return std::isalnum(c) || c == '.' || c == ';' || c == ',' || c == '=' || c == ':' || c == '+' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')';
+}
 
 } // namespace pljit::lexer

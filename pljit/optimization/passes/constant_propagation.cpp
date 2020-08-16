@@ -9,15 +9,15 @@ using ExpressionPtr = std::unique_ptr<ExpressionNode>;
 
 void pljit::optimization::passes::constant_propagation::optimize(pljit::semantic_analysis::FunctionNode& node) {
     {
-        std::vector<int64_t> parameters(symbolTable->get_number_of_parameters(), 0);
-        executionContext = std::make_unique<pljit::execution::ExecutionContext>(*symbolTable, parameters);
+        std::vector<int64_t> parameters(node.getSymbolTable().get_number_of_parameters(), 0);
+        executionContext = std::make_unique<pljit::execution::ExecutionContext>(node.getSymbolTable(), parameters);
     }
-    constant_variables.resize(symbolTable->size());
+    constant_variables.resize(node.getSymbolTable().size());
 
-    for (unsigned i = 0; i < symbolTable->size(); ++i) {
-        switch (symbolTable->get(i).type) {
+    for (unsigned i = 0; i < node.getSymbolTable().size(); ++i) {
+        switch (node.getSymbolTable().get(i).type) {
             case symbol::CONSTANT: {
-                constant_variables[i] = symbolTable->get(i).constant_value;
+                constant_variables[i] = node.getSymbolTable().get(i).constant_value;
                 break;
             }
             default: { // Anything that is not a constant is non-constant at first

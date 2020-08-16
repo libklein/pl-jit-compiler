@@ -2,7 +2,7 @@
 #include "dead_code_elimination.hpp"
 #include "pljit/semantic_analysis/AST.hpp"
 
-using namespace pljit::optimization::passes;
+namespace pljit::optimization::passes {
 
 void dead_code_elimination::optimize(pljit::semantic_analysis::FunctionNode& node) {
     unsigned i = 0;
@@ -17,3 +17,5 @@ void dead_code_elimination::optimize(pljit::semantic_analysis::FunctionNode& nod
         node.removeStatement(node.get_number_of_statements());
     }
 }
+
+} // namespace pljit::optimization::passes

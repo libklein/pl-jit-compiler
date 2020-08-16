@@ -25,7 +25,7 @@ class dot_print_visitor : public parse_tree_visitor {
 
     public:
     dot_print_visitor() = default;
-    dot_print_visitor(std::ostream& out);
+    explicit dot_print_visitor(std::ostream& out);
 
     void visit(const declarator_list_node& node) override;
     void visit(const identifier_node& node) override;

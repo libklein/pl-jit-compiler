@@ -1,7 +1,7 @@
 #include "dot_print_visitor.hpp"
 #include "parse_tree_nodes.hpp"
 
-using namespace pljit::parser;
+namespace pljit::parser {
 
 unsigned dot_print_visitor::write_labeled_node(std::string_view label) {
     unsigned id = next_id++;
@@ -74,3 +74,5 @@ void dot_print_visitor::visit(const variable_declaration_node& node) {
     write_non_terminal_node(node);
 }
 dot_print_visitor::dot_print_visitor(std::ostream& out) : out(out) {}
+
+} // namespace pljit::parser

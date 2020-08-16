@@ -14,7 +14,7 @@ class node_base {
     protected:
     grammar_type type;
     source_management::SourceFragment codeReference;
-    explicit node_base(grammar_type type, source_management::SourceFragment source) : type(type), codeReference(source){};
+    explicit node_base(grammar_type type, source_management::SourceFragment source);;
 
     public:
     grammar_type get_type() const {

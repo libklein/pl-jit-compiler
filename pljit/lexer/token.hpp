@@ -7,29 +7,6 @@
 
 #include "pljit/source_management/SourceCode.hpp"
 
-/*
- * Possible tokens:
- * * "." Terminator
- * * ";"
- * * ","
- * * "PARAM"
- * * "VAR"
- * * "CONST"
- * * "="
- * * "BEGIN"
- * * "END"
- * * "RETURN"
- * * ":="
- * * "+"
- * * "-"
- * * "*"
- * * "/"
- * * "("
- * * ")"
- * * "\d+" literal
- * * "\c\w*" identifier
- */
-
 namespace pljit::lexer {
 
 enum TokenType {
@@ -61,15 +38,11 @@ class token {
     SourceFragment source;
 
     public:
-    token(TokenType type, SourceFragment source) : type(type), source(source){};
+    token(TokenType type, SourceFragment source);
 
-    TokenType Type() const {
-        return type;
-    }
+    TokenType Type() const;
 
-    SourceFragment get_code_reference() const {
-        return source;
-    }
+    SourceFragment get_code_reference() const;
 };
 
 } // namespace pljit::lexer
