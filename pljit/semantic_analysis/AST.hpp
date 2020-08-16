@@ -221,7 +221,6 @@ class BinaryOperatorASTNode : public ExpressionNode {
                           OperatorType operation,
                           std::unique_ptr<ExpressionNode>
                               rightChild);
-    ;
 
     OperatorType get_operator() const {
         return operation;
