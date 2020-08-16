@@ -13,7 +13,7 @@ class ExecutionContext; // Forward declare execution context
 } // namespace pljit::execution
 namespace pljit::optimization {
 class optimization_pass;
-}
+} // namespace pljit::optimization
 namespace pljit::semantic_analysis {
 class ast_visitor; // Forward declare visitor
 class FunctionNode;
