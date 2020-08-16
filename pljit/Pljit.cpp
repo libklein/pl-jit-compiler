@@ -6,7 +6,7 @@
 #include "pljit/semantic_analysis/AST.hpp"
 #include "pljit/semantic_analysis/ASTCreator.hpp"
 
-using namespace pljit;
+namespace pljit {
 
 execution::ExecutionContext Function::call_impl(std::initializer_list<int64_t> parameters) {
     execution::ExecutionContext context(ast->getSymbolTable(), parameters);
@@ -50,3 +50,5 @@ function_handle Pljit::register_function(std::string source) {
     registered_functions.emplace_back(std::make_unique<Function>(std::move(source)));
     return function_handle(this, registered_functions.size() - 1);
 }
+
+} // namespace pljit

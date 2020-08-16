@@ -15,7 +15,7 @@ class dot_print_visitor : public ast_visitor {
 
     public:
     dot_print_visitor() = default;
-    dot_print_visitor(std::ostream& out);
+    explicit dot_print_visitor(std::ostream& out);
 
     void visit(FunctionNode& node) override;
     void visit(IdentifierNode& node) override;

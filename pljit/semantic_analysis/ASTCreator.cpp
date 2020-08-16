@@ -3,7 +3,8 @@
 #include "pljit/semantic_analysis/AST.hpp"
 
 using namespace pljit;
-using namespace pljit::semantic_analysis;
+
+namespace pljit::semantic_analysis {
 
 auto ASTCreator::register_symbol(const parser::identifier_node& node, symbol::symbol_type type, std::optional<int64_t> value) -> std::pair<symbol_handle, bool> {
     std::string_view name = node.get_token().get_code_reference().str();
@@ -20,7 +21,7 @@ bool ASTCreator::analyze_declarations(const parser::declarator_list_node& node, 
     for (unsigned i = 0; i < node.get_number_of_declarations(); ++i) {
         if (auto [handle, success] = register_symbol(*node.get_declaration(i), symbolType, std::nullopt); !success) {
             std::cerr << "Error: Redeclaration of identifier \""
-                      << node.get_declaration(i)->get_token().get_code_reference().str()
+                      << node.getCodeReference().str()
                       << "\" originally defined here: ";
             std::cerr << symbols.get(handle).declaration << std::endl;
             return false;
@@ -34,7 +35,7 @@ bool ASTCreator::analyze_declarations(const parser::init_declarator_list_node& n
         const auto* declaration = node.get_declaration(i);
         if (auto [handle, success] = register_symbol(*declaration->get_identifier(), symbolType, declaration->get_value()->get_value()); !success) {
             std::cerr << "Error: Redeclaration of identifier \""
-                      << node.get_declaration(i)->get_identifier()->get_token().get_code_reference().str()
+                      << node.getCodeReference().str()
                       << "\" originally defined here: ";
             std::cerr << symbols.get(handle).declaration << std::endl;
             return false;
@@ -122,7 +123,7 @@ std::unique_ptr<AssignmentNode> ASTCreator::analyze_assignment_node(const parser
 
     if (symbol.type == symbol::CONSTANT) {
         std::cerr << "Error: Assigning to constant \"" << node.get_identifier()->get_name() << "\" in \n";
-        std::cerr << node.get_identifier()->get_token().get_code_reference() << std::endl;
+        std::cerr << node.get_identifier()->getCodeReference() << std::endl;
         return nullptr;
     }
 
@@ -214,3 +215,5 @@ std::unique_ptr<pljit::semantic_analysis::FunctionNode> ASTCreator::CreateAST(co
     ASTCreator ast_creator;
     return ast_creator.analyze_function(parseTree);
 }
+
+} // namespace pljit::semantic_analysis

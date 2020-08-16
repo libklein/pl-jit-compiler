@@ -1,7 +1,7 @@
 #include "dot_print_visitor.hpp"
 #include "AST.hpp"
 
-using namespace pljit::semantic_analysis;
+namespace pljit::semantic_analysis {
 
 void dot_print_visitor::visit(FunctionNode& node) {
     out << "graph {\n";
@@ -83,3 +83,5 @@ void dot_print_visitor::print_child(ASTNode& node, unsigned int parent_id) {
 }
 
 dot_print_visitor::dot_print_visitor(std::ostream& out) : out(out) {}
+
+} // namespace pljit::semantic_analysis

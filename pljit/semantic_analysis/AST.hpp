@@ -40,9 +40,12 @@ class ASTNode {
     explicit ASTNode(Type type) : type(type){};
 
     public:
-    Type getType() const;;
+    Type getType() const;
 
     virtual std::optional<int64_t> evaluate(execution::ExecutionContext& context) const = 0;
+
+    // Implement as non-cost visitor to allow modification of the AST. In contrast to the parse tree,
+    // that is usually desirable.
     virtual void accept(ast_visitor& visitor) = 0;
 
     virtual ~ASTNode() = default;

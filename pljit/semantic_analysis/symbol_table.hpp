@@ -2,8 +2,8 @@
 #ifndef PLJIT_SYMBOL_TABLE_HPP
 #define PLJIT_SYMBOL_TABLE_HPP
 
-#include "pljit/source_management/SourceCode.hpp"
 #include <string_view>
+#include "pljit/source_management/SourceCode.hpp"
 
 namespace pljit::semantic_analysis {
 
@@ -27,8 +27,8 @@ struct symbol {
 };
 
 /**
-     * Keeps track of symbols. Ordered: First all Params, then all Variables and then all constants
-     */
+ * Keeps track of symbols. Ordered: First all Params, then all Variables and then all constants
+ */
 class symbol_table {
     public:
     using size_type = std::vector<symbol>::size_type;
@@ -38,7 +38,6 @@ class symbol_table {
     size_type number_of_variables = 0;
     size_type number_of_parameters = 0;
     size_type number_of_constants = 0;
-    //std::unordered_map<std::string_view, symbol> identifier_mapping;
 
     public:
     using symbol_handle = std::vector<symbol>::size_type;
@@ -53,21 +52,13 @@ class symbol_table {
     size_type get_number_of_variables() const;
     size_type get_number_of_constants() const;
 
-    auto begin() {
-        return symbols.begin();
-    }
+    std::vector<symbol>::iterator begin();
 
-    auto end() {
-        return symbols.end();
-    }
+    std::vector<symbol>::iterator end();
 
-    auto constants_begin() const {
-        return std::next(symbols.begin(), get_number_of_parameters() + get_number_of_variables());
-    }
+    std::vector<symbol>::const_iterator constants_begin() const;
 
-    auto constants_end() const {
-        return std::next(symbols.begin(), get_number_of_parameters() + get_number_of_variables() + get_number_of_constants());
-    }
+    std::vector<symbol>::const_iterator constants_end() const;
 };
 
 } // namespace pljit::semantic_analysis

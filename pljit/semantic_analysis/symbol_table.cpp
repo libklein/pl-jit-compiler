@@ -1,6 +1,6 @@
 #include "symbol_table.hpp"
 
-using namespace pljit::semantic_analysis;
+namespace pljit::semantic_analysis {
 
 auto symbol_table::insert(pljit::source_management::SourceFragment decl, symbol::symbol_type type, std::optional<int64_t> value) -> symbol_handle {
     assert(type != symbol::CONSTANT || value);
@@ -44,6 +44,18 @@ auto symbol_table::get_number_of_variables() const -> size_type {
 auto symbol_table::get_number_of_constants() const -> size_type {
     return number_of_constants;
 }
+auto symbol_table::constants_begin() const -> std::vector<symbol>::const_iterator {
+    return std::next(symbols.begin(), get_number_of_parameters() + get_number_of_variables());
+}
+auto symbol_table::constants_end() const -> std::vector<symbol>::const_iterator {
+    return std::next(symbols.begin(), get_number_of_parameters() + get_number_of_variables() + get_number_of_constants());
+}
+auto symbol_table::end() -> std::vector<symbol>::iterator {
+    return symbols.end();
+}
+auto symbol_table::begin() -> std::vector<symbol>::iterator {
+    return symbols.begin();
+}
 
 int64_t symbol::get_value() const {
     assert(type == CONSTANT);
@@ -55,3 +67,5 @@ std::string_view symbol::get_name() const {
 void symbol::set_initialized() {
     initialized = true;
 }
+
+} // namespace pljit::semantic_analysis

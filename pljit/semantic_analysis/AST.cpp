@@ -72,9 +72,7 @@ std::optional<int64_t> BinaryOperatorASTNode::evaluate(ExecutionContext& context
         }
         case semantic_analysis::BinaryOperatorASTNode::OperatorType::DIVIDE: {
             if (rhs_result == 0) {
-                // TODO Error... We need to know where each AST node begins/ends
-                std::cerr << "Error: Division by zero at "
-                          << "TODO" << std::endl;
+                std::cerr << "Error: Division by zero at " << std::endl;
                 return {};
             }
             return *lhs_result / *rhs_result;
