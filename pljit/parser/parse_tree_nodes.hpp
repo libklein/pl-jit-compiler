@@ -13,6 +13,7 @@ class parse_tree_visitor;
 class node_base {
     protected:
     grammar_type type;
+    source_management::SourceFragment codeReference;
     explicit node_base(grammar_type type) : type(type){};
 
     public:
@@ -38,8 +39,6 @@ class non_terminal_node : public node_base {
 
     template <class... Args>
     explicit non_terminal_node(grammar_type type, Args... args) : node_base(type), children(0) {
-        static_assert(std::conjunction_v<std::is_convertible<Args, node_ptr>...>,
-                      "Non-terminal parse tree node cannot contain non-nodes");
         assert((args && ...));
         children.reserve(sizeof...(args));
         (children.emplace_back(std::move(args)), ...);

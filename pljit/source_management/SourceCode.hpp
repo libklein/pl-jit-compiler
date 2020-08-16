@@ -84,6 +84,8 @@ class SourceFragment {
     }
 
     public:
+    // TODO REMOVE THIS
+    SourceFragment() : begin_pos(nullptr, 0, 0), end_pos(nullptr, 0, 0) {}
     explicit SourceFragment(SourcePosition begin);
     SourceFragment(SourcePosition begin, SourcePosition end);
 
