@@ -5,14 +5,12 @@
 #include "pljit/optimization/optimization_pass.hpp"
 #include "pljit/parser/parse_tree_nodes.hpp"
 
-using namespace pljit::semantic_analysis;
 using namespace pljit::execution;
 using namespace pljit;
 
+namespace pljit::semantic_analysis {
+
 void FunctionNode::accept(ast_visitor& visitor) {
-    visitor.visit(*this);
-}
-void FunctionNode::accept(const_ast_visitor& visitor) const {
     visitor.visit(*this);
 }
 std::optional<int64_t> FunctionNode::evaluate(ExecutionContext& context) const {
@@ -27,6 +25,27 @@ std::optional<int64_t> FunctionNode::evaluate(ExecutionContext& context) const {
     // Unreachable
     return {};
 }
+FunctionNode::FunctionNode(std::vector<std::unique_ptr<StatementNode>> statements, symbol_table symbols)
+    : ASTNode(ASTNode::Function), statements(std::move(statements)), symbols(std::move(symbols)) {}
+auto FunctionNode::get_number_of_statements() const -> std::vector<std::unique_ptr<StatementNode>>::size_type {
+    return statements.size();
+}
+std::unique_ptr<StatementNode>& FunctionNode::get_statement(unsigned int id) {
+    assert(id < statements.size());
+    return statements[id];
+}
+const symbol_table& FunctionNode::getSymbolTable() const {
+    return symbols;
+}
+symbol_table& FunctionNode::getSymbolTable() {
+    return symbols;
+}
+void FunctionNode::removeStatement(unsigned int id) {
+    statements.erase(statements.begin() + id);
+}
+std::unique_ptr<StatementNode> FunctionNode::releaseStatement(unsigned int id) {
+    return std::move(statements[id]);
+}
 
 /*void FunctionNode::optimize(std::unique_ptr<ASTNode> self, optimization::optimization_pass& optimizer) {
     std::unique_ptr<FunctionNode> casted_self(static_cast<FunctionNode*>(self.release()));
@@ -34,9 +53,6 @@ std::optional<int64_t> FunctionNode::evaluate(ExecutionContext& context) const {
 }*/
 
 void BinaryOperatorASTNode::accept(ast_visitor& visitor) {
-    visitor.visit(*this);
-}
-void BinaryOperatorASTNode::accept(const_ast_visitor& visitor) const {
     visitor.visit(*this);
 }
 std::optional<int64_t> BinaryOperatorASTNode::evaluate(ExecutionContext& context) const {
@@ -74,11 +90,16 @@ void BinaryOperatorASTNode::optimize(std::unique_ptr<ExpressionNode>& self, opti
         self = optimizer.optimize(std::move(typed_self));
     }
 }
+BinaryOperatorASTNode::BinaryOperatorASTNode(std::unique_ptr<ExpressionNode> leftChild, BinaryOperatorASTNode::OperatorType operation, std::unique_ptr<ExpressionNode> rightChild)
+    : ExpressionNode(ASTNode::BinaryOperation),
+      left_child(std::move(leftChild)),
+      operation(operation),
+      right_child(std::move(rightChild)) {
+    assert(this->left_child);
+    assert(this->right_child);
+}
 
 void UnaryOperatorASTNode::accept(ast_visitor& visitor) {
-    visitor.visit(*this);
-}
-void UnaryOperatorASTNode::accept(const_ast_visitor& visitor) const {
     visitor.visit(*this);
 }
 std::optional<int64_t> UnaryOperatorASTNode::evaluate(ExecutionContext& context) const {
@@ -106,9 +127,6 @@ void UnaryOperatorASTNode::optimize(std::unique_ptr<ExpressionNode>& self, optim
 void AssignmentNode::accept(ast_visitor& visitor) {
     visitor.visit(*this);
 }
-void AssignmentNode::accept(const_ast_visitor& visitor) const {
-    visitor.visit(*this);
-}
 std::optional<int64_t> AssignmentNode::evaluate(ExecutionContext& context) const {
     auto expression_result = value->evaluate(context);
     if (!expression_result) return {};
@@ -128,10 +146,6 @@ void ReturnStatementNode::accept(ast_visitor& visitor) {
     visitor.visit(*this);
 }
 
-void ReturnStatementNode::accept(const_ast_visitor& visitor) const {
-    visitor.visit(*this);
-}
-
 std::optional<int64_t> ReturnStatementNode::evaluate(ExecutionContext& context) const {
     return return_expression->evaluate(context);
 }
@@ -144,9 +158,6 @@ void ReturnStatementNode::optimize(std::unique_ptr<StatementNode>& self, optimiz
 }
 
 void LiteralNode::accept(ast_visitor& visitor) {
-    visitor.visit(*this);
-}
-void LiteralNode::accept(const_ast_visitor& visitor) const {
     visitor.visit(*this);
 }
 std::optional<int64_t> LiteralNode::evaluate(ExecutionContext&) const {
@@ -163,9 +174,6 @@ void LiteralNode::optimize(std::unique_ptr<ExpressionNode>& self, optimization::
 void IdentifierNode::accept(ast_visitor& visitor) {
     visitor.visit(*this);
 }
-void IdentifierNode::accept(const_ast_visitor& visitor) const {
-    visitor.visit(*this);
-}
 std::optional<int64_t> IdentifierNode::evaluate(ExecutionContext& context) const {
     return context.get_value(get_symbol_handle());
 }
@@ -176,3 +184,11 @@ void IdentifierNode::optimize(std::unique_ptr<ExpressionNode>& self, optimizatio
         self = optimizer.optimize(std::move(typed_self));
     }
 }
+symbol_table::symbol_handle IdentifierNode::get_symbol_handle() const {
+    return symbol;
+}
+
+ASTNode::Type ASTNode::getType() const {
+    return type;
+}
+} // namespace pljit::semantic_analysis

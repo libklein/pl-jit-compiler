@@ -15,7 +15,6 @@ class dot_print_visitor : public parse_tree_visitor {
 
     template <class node_type>
     void write_non_terminal_node(const node_type& node) {
-        static_assert(std::is_base_of_v<non_terminal_node, node_type>, "Can only write non-terminal nodes");
         unsigned id = write_labeled_node(node_type::NAME);
         for (const auto& child : node.get_children()) {
             out << "n_" << id << " -- ";

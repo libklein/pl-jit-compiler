@@ -2,28 +2,9 @@
 #ifndef PLJIT_PARSE_TREE_VISITOR_HPP
 #define PLJIT_PARSE_TREE_VISITOR_HPP
 
-namespace pljit::parser {
-class non_terminal_node;
+#include "pljit/parser/parser_fwd.hpp"
 
-class terminal_node;
-class additive_expression_node;
-class assignment_expression_node;
-class compound_statement_node;
-class constant_declaration_node;
-class function_definition_node;
-class init_declarator_node;
-class init_declarator_list_node;
-class declarator_list_node;
-class identifier_node;
-class literal_node;
-class multiplicative_expression_node;
-class parameter_declaration_node;
-class primary_expression_node;
-class statement_list_node;
-class statement_node;
-class function_definition_node;
-class unary_expression_node;
-class variable_declaration_node;
+namespace pljit::parser {
 
 class parse_tree_visitor {
     public:
